@@ -4,6 +4,7 @@ using AnonymousApplication.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
 using System.Net;
@@ -61,6 +62,7 @@ namespace AnonymousApi.Controllers
         /// </summary>
         [AllowAnonymous]
         [HttpPost("login")]
+        [EnableRateLimiting("loginLimiter")]
         public async Task<ActionResult<ApiResponse<LoginResponseDto>>> Login([FromBody] LoginDto request)
         {
             var result = await _userAuthentication.LoginAsync(request);

@@ -4,6 +4,7 @@ using AnonymousApplication.Services;
 using AnonymousInfrastructure.Data;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using System.Text;
@@ -114,6 +115,17 @@ builder.Services.AddHangfire(config =>
     )
 );
 
+builder.Services.AddRateLimiter(options =>
+{
+    options.AddSlidingWindowLimiter("loginLimiter", opt =>
+    {
+        opt.PermitLimit = 5;
+        opt.Window = TimeSpan.FromMinutes(1); 
+        opt.SegmentsPerWindow = 6; 
+        opt.QueueLimit = 0;
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -127,7 +139,7 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseHttpsRedirection();
 app.UseCors("AllowAngular");
-
+app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseHangfireDashboard("/hangfire");
