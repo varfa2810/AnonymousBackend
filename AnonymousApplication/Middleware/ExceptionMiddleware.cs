@@ -1,0 +1,41 @@
+﻿using AnonymousApplication.Models;
+using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Net;
+using System.Text;
+using System.Text.Json;
+
+namespace AnonymousApplication.Middleware
+{
+    public class ExceptionMiddleware
+    {
+        private readonly RequestDelegate _next;
+
+        public ExceptionMiddleware(RequestDelegate next)
+        {
+            _next = next;
+        }
+
+        public async Task Invoke(HttpContext context)
+        {
+            try
+            {
+                await _next(context);
+            }
+            catch (Exception ex)
+            {
+                context.Response.StatusCode = StatusCodes.Status500InternalServerError;
+                context.Response.ContentType = "application/json";
+
+                var response = new ApiResponse<string>
+                {
+                    Status = HttpStatusCode.InternalServerError,
+                    Message = "Something went wrong."
+                };
+
+                await context.Response.WriteAsync(JsonSerializer.Serialize(response));
+            }
+        }
+    }
+}
