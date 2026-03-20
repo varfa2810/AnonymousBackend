@@ -21,7 +21,7 @@ namespace AnonymousApplication.Services
             var sql = @"
                        DELETE TOP (500)
                        FROM Messages
-                       WHERE CreatedAt < DATEADD(DAY, -30, GETUTCDATE())
+                       WHERE CreatedDate < DATEADD(DAY, -30, GETUTCDATE())
                        ";
 
             var rows = await connection.ExecuteAsync(sql);

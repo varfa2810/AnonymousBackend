@@ -122,5 +122,22 @@ namespace AnonymousApplication.Services
 
             return true;
         }
+
+        public async Task<int> DeleteUser(Guid userId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            string query = @"Delete from Users where UserId = @userId";
+
+            var deleted = await connection.ExecuteAsync(
+                query,
+                new { userId });
+
+            if (deleted > 0)
+            {
+                return deleted;
+            }
+            return 0;
+        }
     }
-}
+}   
