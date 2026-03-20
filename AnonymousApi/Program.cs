@@ -117,12 +117,17 @@ builder.Services.AddHangfire(config =>
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddSlidingWindowLimiter("loginLimiter", opt =>
+    options.AddFixedWindowLimiter("loginLimiter", opt =>
     {
         opt.PermitLimit = 5;
         opt.Window = TimeSpan.FromMinutes(1); 
-        opt.SegmentsPerWindow = 6; 
-        opt.QueueLimit = 0;
+        opt.QueueLimit = 0; 
+    });
+
+    options.AddFixedWindowLimiter("deleteLimiter", opt =>
+    {
+        opt.PermitLimit = 2;
+        opt.Window = TimeSpan.FromSeconds(10);
     });
 });
 

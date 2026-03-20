@@ -135,6 +135,39 @@ namespace AnonymousApi.Controllers
             });
         }
 
+        [Authorize]
+        [HttpDelete("deleteUser/{userId}")]
+        [EnableRateLimiting("deleteLimiter")]
+        public async Task<ActionResult<ApiResponse<int>>> DeleteUser(Guid userId)
+        {
+            var result = await _userAuthentication.DeleteUser(userId);
+
+            if (result > 0)
+            {
+                Response.Cookies.Delete("access_token", new CookieOptions
+                {
+                    Secure = true,
+                    SameSite = SameSiteMode.None,
+                    Path = "/"
+                });
+
+                return Ok(new ApiResponse<int>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "User deleted successfully",
+                    Data = result
+                });
+            }
+
+            return NotFound(new ApiResponse<int>
+            {
+                Status = HttpStatusCode.NotFound,
+                Message = "User not found",
+                Data = result
+            });
+
+        }
+
 
         [HttpPost("logout")]
         [Authorize]
