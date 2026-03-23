@@ -150,5 +150,55 @@ namespace AnonymousApi.Controllers
                 Message = "Message not found or already deleted."
             });
         }
+
+
+        [HttpPost("commentOnMessage")]
+        [Authorize]
+        public async Task<ActionResult<ApiResponse<bool>>> CommentOnMessage(CommentRequestDto comment)
+        {
+            var result  = await _messages.CommentOnMessage(comment);
+
+            if (result)
+            {
+                return Ok(new ApiResponse<bool> { 
+                
+                    Status = HttpStatusCode.OK,
+                    Message = "Comment inserted successfully.",
+                    Data = result
+                });
+            }
+
+            return BadRequest(new ApiResponse<bool>
+            {
+
+                Status = HttpStatusCode.BadRequest,
+                Message = "Error in inserting comment.",
+                Data = result
+            });
+        }
+
+        [HttpGet("getComments/{messageid}")]
+        [Authorize]
+        public async Task<ActionResult<ApiResponse<List<CommentResponseDto>>>> GetCommentsByMessageId(int messageid)
+        {
+            var comments = await _messages.GetCommentsByMessageId(messageid);
+
+            if (comments == null || !comments.Any())
+            {
+                return NotFound(new ApiResponse<List<CommentResponseDto>>
+                {
+                    Status = HttpStatusCode.NotFound,
+                    Message = "No comments found for this message.",
+                    Data = new List<CommentResponseDto>()
+                });
+            }
+
+            return Ok(new ApiResponse<List<CommentResponseDto>>
+            {
+                Status = HttpStatusCode.OK,
+                Message = "Fetched all comments.",
+                Data = comments
+            });
+        }
     }
 }

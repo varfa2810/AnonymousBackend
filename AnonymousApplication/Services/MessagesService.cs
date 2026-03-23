@@ -106,5 +106,41 @@ namespace AnonymousApplication.Services
                 throw;
             }
         }
+
+        public async Task<bool> CommentOnMessage(CommentRequestDto comment)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            connection.Open();
+
+            string query = @"INSERT INTO Comments (MessageId, Comment, UserId)
+                     VALUES (@MessageId, @Comment, @UserId)";
+
+            var parameters = new
+            {
+                MessageId = comment.MessageId,
+                Comment = comment.Comment,
+                UserId = comment.UserId,
+            };
+
+            var rowsaffected = await connection.ExecuteAsync(query, parameters);
+            if (rowsaffected > 0)
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        public async Task<List<CommentResponseDto>> GetCommentsByMessageId(int messageId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+            connection.Open();
+
+            string query = @"SELECT * FROM Comments WHERE MessageId = @messageId";
+
+            var comments = await connection.QueryAsync<CommentResponseDto>(query, new { messageId });
+
+            return comments.ToList();
+        }
     }
 }
