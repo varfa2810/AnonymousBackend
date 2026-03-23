@@ -13,5 +13,8 @@ namespace AnonymousApplication.Interfaces
         Task<bool> ReactToMessage(ReactToMessageDto reactToMessageDto);
         Task<bool> DeleteMessage(int messageId);
 
+        Task<bool> CommentOnMessage(CommentRequestDto comment);
+        Task<List<CommentResponseDto>> GetCommentsByMessageId(int messageId);
+
     }
 }
