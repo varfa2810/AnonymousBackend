@@ -2,9 +2,13 @@
 using AnonymousApplication.Interfaces;
 using Dapper;
 using Hangfire;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace AnonymousApplication.Services
@@ -13,11 +17,13 @@ namespace AnonymousApplication.Services
     {
         private readonly IConfiguration _config;
         private readonly IDbConnectionFactory _connectionFactory;
+        private readonly IWebHostEnvironment _env;
 
-        public EmailService(IConfiguration config, IDbConnectionFactory connectionFactory)
+        public EmailService(IConfiguration config, IDbConnectionFactory connectionFactory, IWebHostEnvironment env)
         {
             _config = config;
             _connectionFactory = connectionFactory;
+            _env = env;
         }
 
 
@@ -25,7 +31,7 @@ namespace AnonymousApplication.Services
         public async Task<string> SendCompanyApproveOrDissapproveEmail(bool action, Guid companyId)
         {
             using var connection = _connectionFactory.CreateConnection();
-                
+
             var query = @"select CompanyName , HREmail ,Email from Companies where CompanyId = @companyid;";
 
             var details = await connection.QuerySingleOrDefaultAsync<dynamic>(query, new { companyId });
@@ -54,15 +60,17 @@ namespace AnonymousApplication.Services
 
             if (action)
             {
+                string inviteLink = GenerateInviteToken();
+
                 body = template
                          .Replace("{{CompanyName}}", details?.CompanyName)
-                         .Replace("{{LoginUrl}}", "https://yourapp.com/login");
+                         .Replace("{{LoginUrl}}", inviteLink);
             }
-            else 
+            else
             {
                 body = template
                          .Replace("{{CompanyName}}", details?.CompanyName);
-                     
+
             }
 
             var apiKey = _config["SendGrid:ApiKey"];
@@ -94,5 +102,36 @@ namespace AnonymousApplication.Services
             return "Email sent successfully";
 
         }
+
+        private string GenerateInviteToken()
+        {
+
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
+
+            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+            var token = new JwtSecurityToken(
+                 issuer: _config["Jwt:Issuer"],
+                audience: _config["Jwt:Audience"],
+                expires: DateTime.UtcNow.AddHours(24),
+                signingCredentials: credentials
+            );
+
+            string inviteLink = string.Empty;
+            var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
+
+            if (_env.EnvironmentName.Equals("Development"))
+            {
+                inviteLink = $"https://localhost:7107?token={jwtToken}";
+            }
+            else if (_env.EnvironmentName.Equals("Production"))
+            {
+                inviteLink = $"https://localhost:7107?token={jwtToken}";
+            }
+
+            return inviteLink;
+        }
+
     }
 }
