@@ -31,7 +31,7 @@ namespace AnonymousApplication.Middleware
                 var response = new ApiResponse<string>
                 {
                     Status = HttpStatusCode.InternalServerError,
-                    Message = "Something went wrong."
+                    Message = $"Something went wrong. Message - {ex.Message}."
                 };
 
                 await context.Response.WriteAsync(JsonSerializer.Serialize(response));

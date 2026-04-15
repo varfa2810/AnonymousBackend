@@ -9,7 +9,6 @@ namespace AnonymousApplication.Services
     public class HangfireService : IHangFire
     {
         private readonly IDbConnectionFactory _connectionFactory;
-
         public HangfireService(IDbConnectionFactory connectionFactory)
         {
             _connectionFactory = connectionFactory;

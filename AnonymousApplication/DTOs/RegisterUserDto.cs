@@ -14,5 +14,8 @@ namespace AnonymousApplication.DTOs
         [Required]
         [MinLength(6)]
         public string Password { get; set; } = string.Empty;
+
+        [Required]
+        public Guid CompanyId { get; set; }
     }
 }

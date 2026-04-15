@@ -1,4 +1,5 @@
 ﻿using AnonymousApplication.DTOs;
+using AnonymousApplication.Enums;
 using AnonymousApplication.Interfaces;
 using Dapper;
 using Microsoft.AspNetCore.Connections;
@@ -28,18 +29,17 @@ namespace AnonymousApplication.Services
             using var connection = _connectionFactory.CreateConnection();
 
             var query = @"
-        SELECT UserId, Username, Password
-        FROM Users
-        WHERE Username = @Username;";
+    SELECT UserId, Username, Password, RoleId, IsActive
+    FROM Users
+    WHERE Username = @Username;";
 
             var user = await connection.QueryFirstOrDefaultAsync<UserDto>(
                 query,
-                new { Username = request.Username });
+                new { request.Username });
 
             if (user == null)
                 return null;
 
-            // 🔐 Verify hashed password
             bool isPasswordValid = BCrypt.Net.BCrypt.Verify(
                 request.Password,
                 user.Password);
@@ -49,9 +49,10 @@ namespace AnonymousApplication.Services
 
             var claims = new[]
             {
-        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-        new Claim(ClaimTypes.Name, user.Username)
-    };
+              new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+              new Claim(ClaimTypes.Name, user.Username),
+              new Claim(ClaimTypes.Role, user.RoleId.ToString()),
+            };
 
             var key = new SymmetricSecurityKey(
                 Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
