@@ -104,6 +104,7 @@ namespace AnonymousApi.Controllers
             {
                 UserId = User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value,
                 Username = User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value,
+                Role = User.FindFirst(System.Security.Claims.ClaimTypes.Role)?.Value,
             };
 
             return Ok(user);
@@ -135,7 +136,7 @@ namespace AnonymousApi.Controllers
             });
         }
 
-        [Authorize]
+        [Authorize(Roles = "SuperAdmin, CompanyAdmin")]
         [HttpDelete("deleteUser/{userId}")]
         [EnableRateLimiting("deleteLimiter")]
         public async Task<ActionResult<ApiResponse<int>>> DeleteUser(Guid userId)

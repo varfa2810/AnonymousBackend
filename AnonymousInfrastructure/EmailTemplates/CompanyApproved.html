@@ -1,0 +1,123 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Company Approved</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: #0f172a;
+            margin: 0;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 650px;
+            margin: auto;
+            background: linear-gradient(145deg, #1e293b, #0f172a);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            color: #e2e8f0;
+        }
+
+        .header {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(90deg, #6366f1, #4f46e5);
+            border-radius: 12px;
+        }
+
+            .header h2 {
+                margin: 0;
+                font-size: 26px;
+                color: #ffffff;
+            }
+
+        p {
+            line-height: 1.7;
+            color: #cbd5f5;
+            font-size: 15px;
+        }
+
+        strong {
+            color: #818cf8;
+        }
+
+        .highlight-box {
+            background: rgba(99,102,241,0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            border: 1px solid rgba(99,102,241,0.2);
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 14px 24px;
+            margin-top: 20px;
+            color: #ffffff;
+            background: linear-gradient(90deg, #6366f1, #4f46e5);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+            .btn:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 15px rgba(99,102,241,0.4);
+            }
+
+        .footer {
+            margin-top: 30px;
+            font-size: 12px;
+            color: #94a3b8;
+            text-align: center;
+        }
+
+        .emoji {
+            font-size: 40px;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+
+        <div class="header">
+            <div class="emoji">🚀</div>
+            <h2>Company Approved</h2>
+        </div>
+
+        <p>Hi User,</p>
+
+        <div class="highlight-box">
+            🎉 Your company <strong>{{CompanyName}}</strong> has been successfully approved by the Super Admin.
+        </div>
+
+        <p>
+            You can now register as a <strong>Company Admin</strong> and start managing your organization.
+        </p>
+
+        <p style="text-align:center;">
+            <a href="{{RegisterUrl}}" class="btn">
+                Register as Company Admin →
+            </a>
+        </p>
+
+        <p>
+            Need help? Our support team is always here for you.
+        </p>
+
+        <p>Cheers,<br />Anonymous Team</p>
+
+        <div class="footer">
+            © 2026 Anonymous • All rights reserved
+        </div>
+
+    </div>
+</body>
+</html>
