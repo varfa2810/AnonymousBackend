@@ -22,40 +22,7 @@ namespace AnonymousApi.Controllers
             _userAuthentication = userAuthentication;
         }
 
-        /// <summary>
-        /// Register a new user
-        /// </summary>
-        [HttpPost("register")]
-        [AllowAnonymous]
-        [SwaggerOperation(
-            Summary = "Register new user",
-            Description = "Creates a new user account with hashed password."
-        )]
-        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<ApiResponse<string>>> Register(
-            [FromBody] RegisterUserDto request)
-        {
-            var result = await _userAuthentication.RegisterUser(request);
-
-            if (!result)
-            {
-                return BadRequest(new ApiResponse<string>
-                {
-                    Status = HttpStatusCode.BadRequest,
-                    Message = "Username already exists.",
-                });
-            }
-
-            return Ok(new ApiResponse<string>
-            {
-                Status = HttpStatusCode.OK,
-                Message = "User registered successfully.",
-                Data = "Success"
-            });
-        }
-
-
+       
 
         /// <summary>
         /// Login and get JWT token
@@ -83,8 +50,6 @@ namespace AnonymousApi.Controllers
                 SameSite = SameSiteMode.None,
                 Expires = result.Expiration
             });
-
-
 
             return Ok(new ApiResponse<LoginResponseDto>
             {
@@ -136,7 +101,7 @@ namespace AnonymousApi.Controllers
             });
         }
 
-        [Authorize(Roles = "SuperAdmin, CompanyAdmin")]
+        [Authorize]
         [HttpDelete("deleteUser/{userId}")]
         [EnableRateLimiting("deleteLimiter")]
         public async Task<ActionResult<ApiResponse<int>>> DeleteUser(Guid userId)

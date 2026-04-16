@@ -2,9 +2,13 @@
 using AnonymousApplication.Interfaces;
 using Dapper;
 using Hangfire;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Text;
 
 namespace AnonymousApplication.Services
@@ -13,11 +17,20 @@ namespace AnonymousApplication.Services
     {
         private readonly IConfiguration _config;
         private readonly IDbConnectionFactory _connectionFactory;
+        private readonly IWebHostEnvironment _env;
+        private readonly ICompanyAdminInvite _companyAdminInvite;
 
-        public EmailService(IConfiguration config, IDbConnectionFactory connectionFactory)
+        public EmailService(
+            IConfiguration config,
+            IDbConnectionFactory connectionFactory,
+            IWebHostEnvironment env,
+            ICompanyAdminInvite companyAdminInvite
+            )
         {
             _config = config;
             _connectionFactory = connectionFactory;
+            _env = env;
+            _companyAdminInvite = companyAdminInvite;
         }
 
 
@@ -25,7 +38,7 @@ namespace AnonymousApplication.Services
         public async Task<string> SendCompanyApproveOrDissapproveEmail(bool action, Guid companyId)
         {
             using var connection = _connectionFactory.CreateConnection();
-                
+
             var query = @"select CompanyName , HREmail ,Email from Companies where CompanyId = @companyid;";
 
             var details = await connection.QuerySingleOrDefaultAsync<dynamic>(query, new { companyId });
@@ -54,15 +67,17 @@ namespace AnonymousApplication.Services
 
             if (action)
             {
+                string inviteLink = await _companyAdminInvite.CreateCompanyAdminInviteLink(companyId);
+
                 body = template
                          .Replace("{{CompanyName}}", details?.CompanyName)
-                         .Replace("{{LoginUrl}}", "https://yourapp.com/login");
+                         .Replace("{{LoginUrl}}", inviteLink);
             }
-            else 
+            else
             {
                 body = template
                          .Replace("{{CompanyName}}", details?.CompanyName);
-                     
+
             }
 
             var apiKey = _config["SendGrid:ApiKey"];
@@ -94,5 +109,6 @@ namespace AnonymousApplication.Services
             return "Email sent successfully";
 
         }
+
     }
 }

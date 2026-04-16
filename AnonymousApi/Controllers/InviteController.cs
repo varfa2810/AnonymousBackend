@@ -1,0 +1,97 @@
+﻿using AnonymousApplication.Interfaces;
+using AnonymousApplication.Models;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
+
+namespace AnonymousApi.Controllers
+{
+    [Route("api/invite")]
+    [ApiController]
+    [Authorize(Roles = "SuperAdmin")]
+    public class InviteController : ControllerBase
+    {
+        private readonly ICompanyAdminInvite _companyAdminInvite;
+        private readonly ICompanyEmployeeInvite _companyEmployeeInvite;
+        private readonly IInviteVerify _inviteVerify;
+
+        public InviteController(ICompanyAdminInvite companyAdminInvite, ICompanyEmployeeInvite companyEmployeeInvite, IInviteVerify inviteVerify)
+        {
+            _companyAdminInvite = companyAdminInvite;
+            _companyEmployeeInvite = companyEmployeeInvite;
+            _inviteVerify = inviteVerify;
+        }
+
+        [HttpPost("{companyId}/cadmin-invite")]
+        public async Task<ActionResult<ApiResponse<string>>> CreateCompanyAdminInviteLink(Guid companyId)
+        {
+            string invitelink = await _companyAdminInvite.CreateCompanyAdminInviteLink(companyId);
+
+            if (invitelink == string.Empty)
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Error in creating invite link.",
+                    Data = null
+                });
+            }
+
+            return Ok(new ApiResponse<string>
+            {
+                Status = HttpStatusCode.OK,
+                Message = "Invitelink link created successfully.",
+                Data = invitelink
+            });
+        }
+
+
+        [HttpPost("{companyId}/cemployee-invite")]
+        [Authorize(Roles = "SuperAdmin, CompanyAdmin")]
+        public async Task<ActionResult<ApiResponse<string>>> CreateCompanyEmployeeInviteLink(Guid companyId)
+        {
+            string invitelink = await _companyEmployeeInvite.CreateCompanyEmployeeInviteLink(companyId);
+
+            if (invitelink == string.Empty)
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Error in creating invite link.",
+                    Data = null
+                });
+            }
+
+            return Ok(new ApiResponse<string>
+            {
+                Status = HttpStatusCode.OK,
+                Message = "Invitelink link created successfully.",
+                Data = invitelink
+            });
+        }
+
+        [HttpPost("verify-invite")]
+        public async Task<ActionResult<ApiResponse<bool>>> VerifyInviteLink(string invitelink)
+        {
+            bool isValid = await _inviteVerify.VerifyInviteLink(invitelink);
+
+            if (isValid)
+            {
+                return Ok(new ApiResponse<bool>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "Link is valid.",
+                    Data = isValid
+                });
+            }
+
+            return BadRequest(new ApiResponse<bool>
+            {
+                Status = HttpStatusCode.BadRequest,
+                Message = "Link is expired.",
+                Data = isValid
+            });
+        }
+    }
+}
