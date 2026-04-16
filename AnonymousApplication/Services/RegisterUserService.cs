@@ -21,6 +21,21 @@ namespace AnonymousApplication.Services
         {
             using var connection = _connectionFactory.CreateConnection();
 
+            string checkQuery2 = @"
+                                SELECT c.IsApproved 
+                                FROM CompanyBranches AS cb
+                                LEFT JOIN Companies AS c ON c.CompanyId = cb.CompanyId
+                                WHERE cb.BranchId = @BranchId";
+
+            var isApproved = await connection.ExecuteScalarAsync<bool>(
+                checkQuery2, new { BranchId = request.CompanyBranchId });
+
+            if (!isApproved)
+            {
+                throw new InvalidOperationException(
+                    "Cannot register as employee until company has approval from super admin.");
+            }
+
             // Check if username already exists
             var checkQuery = @"SELECT COUNT(1) FROM Users WHERE Username = @Username;";
 
@@ -57,8 +72,25 @@ namespace AnonymousApplication.Services
 
             using var connection = _connectionFactory.CreateConnection();
 
+            string checkQuery2 = @"
+                                SELECT c.IsApproved 
+                                FROM CompanyBranches AS cb
+                                LEFT JOIN Companies AS c ON c.CompanyId = cb.CompanyId
+                                WHERE cb.BranchId = @BranchId";
+
+            var isApproved = await connection.ExecuteScalarAsync<bool>(
+                checkQuery2, new { BranchId = request.CompanyBranchId });
+
+            if (!isApproved)
+            {
+                throw new InvalidOperationException(
+                    "Cannot register as admin until company has approval from super admin.");
+            }
+
+
             // Check if username already exists
             var checkQuery = @"SELECT COUNT(1) FROM Users WHERE Username = @Username;";
+
 
             var exists = await connection.ExecuteScalarAsync<int>(
                 checkQuery,

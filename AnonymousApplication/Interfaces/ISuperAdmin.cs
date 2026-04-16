@@ -11,5 +11,8 @@ namespace AnonymousApplication.Interfaces
 
         Task<List<CompanyDetailsResponseDto>> GetAllCompanyDetails();
         Task<CompanyDetailsResponseDto?> GetCompanyDetailsFromCompanyId(Guid companyId);
+
+        Task<List<CompanyAdminsDetailsDto>> GetAllCompanyAdmins();
+        Task<List<CompanyAdminsDetailsDto>> GetCompanyAdminsFromCompanyId(Guid companyId);
     }
-}
+}   
