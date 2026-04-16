@@ -42,6 +42,26 @@ namespace AnonymousApplication.Services
             }
         }
 
+        public async Task<List<CompanyAdminsDetailsDto>> GetAllCompanyAdmins()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            var adminDetails = await connection.QueryAsync<CompanyAdminsDetailsDto>
+                ("[GetAllCompanyAdminsDetails]", commandType: CommandType.StoredProcedure);
+
+            return adminDetails.ToList();
+        }
+
+        public async Task<List<CompanyAdminsDetailsDto>> GetCompanyAdminsFromCompanyId(Guid companyId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            var adminDetails = await connection.QueryAsync<CompanyAdminsDetailsDto>
+                ("[GetAllCompanyAdminsDetails]", new { CompanyId = companyId }, commandType: CommandType.StoredProcedure);
+
+            return adminDetails.ToList();
+        }
+
         public async Task<List<CompanyDetailsResponseDto>> GetAllCompanyDetails()
         {
             using var connection = _connectionFactory.CreateConnection();

@@ -19,7 +19,7 @@ namespace AnonymousApi.Controllers
             _superAdmin = superAdmin;
         }
 
-        [HttpPost("{companyId}/approve")]
+        [HttpPost("approve/{companyId}")]
         public async Task<ActionResult<ApiResponse<int>>> ApproveCompany(Guid companyId, [FromQuery] bool approve)
         {
             var result = await _superAdmin.ApproveOrRejectCompanyRequest(companyId, approve);
@@ -71,9 +71,9 @@ namespace AnonymousApi.Controllers
                 });
             }
 
-            return BadRequest(new ApiResponse<List<CompanyDetailsResponseDto>>
+            return NotFound(new ApiResponse<List<CompanyDetailsResponseDto>>
             {
-                Status = HttpStatusCode.BadRequest,
+                Status = HttpStatusCode.NotFound,
                 Message = "Error fetching all company details.",
                 Data = details
             });
@@ -81,7 +81,7 @@ namespace AnonymousApi.Controllers
         }
 
 
-        [HttpGet("{companyId}/company-details")]
+        [HttpGet("company-details/{companyId}")]
         public async Task<ActionResult<ApiResponse<CompanyDetailsResponseDto>>> GetAllCompanyDetailsWithId(Guid companyId)
         {
             var details = await _superAdmin.GetCompanyDetailsFromCompanyId(companyId);
@@ -103,6 +103,52 @@ namespace AnonymousApi.Controllers
                 Data = details
             });
 
+        }
+
+        [HttpGet("admins-details")]
+        public async Task<ActionResult<ApiResponse<List<CompanyAdminsDetailsDto>>>> GetAllCompanyAdminsDetails()
+        {
+            var details = await _superAdmin.GetAllCompanyAdmins();
+
+            if (details.Any())
+            {
+                return Ok(new ApiResponse<List<CompanyAdminsDetailsDto>>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "Fetched all company admins succesfully.",
+                    Data = details
+                });
+            }
+
+            return NotFound(new ApiResponse<List<CompanyAdminsDetailsDto>>
+            {
+                Status = HttpStatusCode.NotFound,
+                Message = "No company admins found.",
+                Data = details
+            });
+        }
+
+        [HttpGet("admins-details/{companyId}")]
+        public async Task<ActionResult<ApiResponse<List<CompanyAdminsDetailsDto>>>> GetCompanyAdminsFromCompanyId(Guid companyId)
+        {
+            var details = await _superAdmin.GetCompanyAdminsFromCompanyId(companyId);
+
+            if (details.Any())
+            {
+                return Ok(new ApiResponse<List<CompanyAdminsDetailsDto>>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "Fetched company admins succesfully.",
+                    Data = details
+                });
+            }
+
+            return NotFound(new ApiResponse<List<CompanyAdminsDetailsDto>>
+            {
+                Status = HttpStatusCode.NotFound,
+                Message = "No admins founds for this company.",
+                Data = details
+            });
         }
 
     }
