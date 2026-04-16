@@ -59,7 +59,7 @@ namespace AnonymousApi.Controllers
         [HttpGet("company-details")]
         public async Task<ActionResult<ApiResponse<List<CompanyDetailsResponseDto>>>> GetAllCompanyDetails()
         {
-            var details  = await _superAdmin.GetAllCompanyDetails();
+            var details = await _superAdmin.GetAllCompanyDetails();
 
             if (details.Any())
             {
@@ -84,7 +84,7 @@ namespace AnonymousApi.Controllers
         [HttpGet("{companyId}/company-details")]
         public async Task<ActionResult<ApiResponse<CompanyDetailsResponseDto>>> GetAllCompanyDetailsWithId(Guid companyId)
         {
-            var details  = await _superAdmin.GetCompanyDetailsFromCompanyId(companyId);
+            var details = await _superAdmin.GetCompanyDetailsFromCompanyId(companyId);
 
             if (details != null)
             {

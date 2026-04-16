@@ -16,6 +16,12 @@ namespace AnonymousApplication.DTOs
         public string Password { get; set; } = string.Empty;
 
         [Required]
-        public Guid CompanyId { get; set; }
+        public int CompanyBranchId { get; set; }
+    }
+
+    public class RegisterCompanyAdminDto : RegisterUserDto
+    {
+        [Required]
+        public int DesignationId { get; set; }
     }
 }

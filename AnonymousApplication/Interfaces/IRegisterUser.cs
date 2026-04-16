@@ -5,8 +5,12 @@ using System.Text;
 
 namespace AnonymousApplication.Interfaces
 {
-    public interface IRegsiterCompany
+    public interface IRegisteruser
     {
+        Task<bool> RegisterEmployee(RegisterUserDto request);
+
+        Task<bool> RegisterCompanyadmin(RegisterCompanyAdminDto request);
         Task<Guid> RegisterCompany(RegisterCompanyDto register);
+
     }
 }

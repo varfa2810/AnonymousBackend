@@ -21,9 +21,12 @@ builder.Services.AddScoped<ISendMessage, SendMessageService>();
 builder.Services.AddScoped<IMessages, MessagesService>();
 builder.Services.AddScoped<IUserAuthentication, UserAuthenticationService>();
 builder.Services.AddScoped<ILocation, LocationService>();
-builder.Services.AddScoped<IRegsiterCompany, RegisterCompanyService>();
 builder.Services.AddScoped<ISuperAdmin, SuperAdminService>();
 builder.Services.AddScoped<IEmail, EmailService>();
+builder.Services.AddScoped<IRegisteruser, RegisterUserService>();
+builder.Services.AddScoped<ICompanyAdminInvite, InviteService>();
+builder.Services.AddScoped<ICompanyEmployeeInvite, InviteService>();
+builder.Services.AddScoped<IInviteVerify, InviteService>();
 builder.Services.AddScoped<IHangFire, HangfireService>();
 
 builder.Services.AddEndpointsApiExplorer();

@@ -76,35 +76,7 @@ namespace AnonymousApplication.Services
             };
         }
 
-        public async Task<bool> RegisterUser(RegisterUserDto request)
-        {
-            using var connection = _connectionFactory.CreateConnection();
-
-            // Check if username already exists
-            var checkQuery = @"SELECT COUNT(1) FROM Users WHERE Username = @Username;";
-
-            var exists = await connection.ExecuteScalarAsync<int>(
-                checkQuery,
-                new { request.Username });
-
-            if (exists > 0)
-                return false;
-
-            // Hash password
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
-
-            var insertQuery = @"
-        INSERT INTO Users (Username, Password)
-        VALUES (@Username, @Password);";
-
-            var result = await connection.ExecuteAsync(insertQuery, new
-            {
-                request.Username,
-                Password = hashedPassword
-            });
-
-            return result > 0;
-        }
+     
 
         public async Task<bool> CheckUniqueUsername(string username)
         {

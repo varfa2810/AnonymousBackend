@@ -18,12 +18,19 @@ namespace AnonymousApplication.Services
         private readonly IConfiguration _config;
         private readonly IDbConnectionFactory _connectionFactory;
         private readonly IWebHostEnvironment _env;
+        private readonly ICompanyAdminInvite _companyAdminInvite;
 
-        public EmailService(IConfiguration config, IDbConnectionFactory connectionFactory, IWebHostEnvironment env)
+        public EmailService(
+            IConfiguration config,
+            IDbConnectionFactory connectionFactory,
+            IWebHostEnvironment env,
+            ICompanyAdminInvite companyAdminInvite
+            )
         {
             _config = config;
             _connectionFactory = connectionFactory;
             _env = env;
+            _companyAdminInvite = companyAdminInvite;
         }
 
 
@@ -60,7 +67,7 @@ namespace AnonymousApplication.Services
 
             if (action)
             {
-                string inviteLink = GenerateInviteToken();
+                string inviteLink = await _companyAdminInvite.CreateCompanyAdminInviteLink(companyId);
 
                 body = template
                          .Replace("{{CompanyName}}", details?.CompanyName)
@@ -101,36 +108,6 @@ namespace AnonymousApplication.Services
 
             return "Email sent successfully";
 
-        }
-
-        private string GenerateInviteToken()
-        {
-
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
-
-            var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-            var token = new JwtSecurityToken(
-                 issuer: _config["Jwt:Issuer"],
-                audience: _config["Jwt:Audience"],
-                expires: DateTime.UtcNow.AddHours(24),
-                signingCredentials: credentials
-            );
-
-            string inviteLink = string.Empty;
-            var jwtToken = new JwtSecurityTokenHandler().WriteToken(token);
-
-            if (_env.EnvironmentName.Equals("Development"))
-            {
-                inviteLink = $"https://localhost:7107?token={jwtToken}";
-            }
-            else if (_env.EnvironmentName.Equals("Production"))
-            {
-                inviteLink = $"https://localhost:7107?token={jwtToken}";
-            }
-
-            return inviteLink;
         }
 
     }
