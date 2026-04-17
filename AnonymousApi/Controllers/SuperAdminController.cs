@@ -20,33 +20,19 @@ namespace AnonymousApi.Controllers
             _superAdmin = superAdmin;
         }
 
-        [HttpPost("approve/{companyId}")]
-        public async Task<ActionResult<ApiResponse<int>>> ApproveCompany(Guid companyId, [FromQuery, Required] bool approve)
+        [HttpPost("action")]
+        public async Task<ActionResult<ApiResponse<int>>> ProcessCompanyRequest(ApproveorRejectCompanyDto request)
         {
-            var result = await _superAdmin.ApproveOrRejectCompanyRequest(companyId, approve);
+            var result = await _superAdmin.ProcessCompanyRequest(request);
 
             if (result > 0)
-            {
-                if (approve)
-                {
+            { 
                     return Ok(new ApiResponse<bool>
                     {
                         Status = HttpStatusCode.OK,
-                        Message = "Company approved successfully.",
-                        Data = true
+                        Message = request.Action ? "Company approved successfully." : "Company rejected and deleted successfully.",
+                        Data = request.Action
                     });
-                }
-
-                else
-                {
-                    return Ok(new ApiResponse<bool>
-                    {
-                        Status = HttpStatusCode.OK,
-                        Message = "Company rejected and deleted successfully.",
-                        Data = false
-                    });
-
-                }
             }
 
             return NotFound(new ApiResponse<string>
