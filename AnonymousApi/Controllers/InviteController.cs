@@ -2,6 +2,7 @@
 using AnonymousApplication.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using System.ComponentModel.Design;
 using System.Net;
@@ -114,12 +115,12 @@ namespace AnonymousApi.Controllers
                 });
             }
 
-            return BadRequest(new ApiResponse<bool>
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<dynamic>
             {
-                Status = HttpStatusCode.BadRequest,
+                Status = HttpStatusCode.InternalServerError,
                 Message = "Link is expired.",
-                Data = isValid
             });
+           
         }
     }
 }

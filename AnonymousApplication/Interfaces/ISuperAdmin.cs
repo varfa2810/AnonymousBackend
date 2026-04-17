@@ -7,7 +7,7 @@ namespace AnonymousApplication.Interfaces
 {
     public interface ISuperAdmin
     {
-        Task<int> ApproveOrRejectCompanyRequest(Guid companyId, bool approve);
+        Task<int> ProcessCompanyRequest(ApproveorRejectCompanyDto request);
 
         Task<List<CompanyDetailsResponseDto>> GetAllCompanyDetails();
         Task<CompanyDetailsResponseDto?> GetCompanyDetailsFromCompanyId(Guid companyId);
