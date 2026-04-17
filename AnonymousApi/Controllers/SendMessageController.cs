@@ -21,9 +21,6 @@ namespace AnonymousApi.Controllers
         }
 
         [HttpPost("sendMessage")]
-        [SwaggerOperation(Summary = "Create Message", Description = "Creates a new message and returns the generated Message Id.")]
-        [SwaggerResponse(StatusCodes.Status201Created, "Message created successfully", typeof(ApiResponse<int>))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request")]
         public async Task<ActionResult<ApiResponse<int>>> SendMessage(
                                    [FromBody, SwaggerRequestBody("Message payload", Required = true)] SendMessageDto message)
         {
@@ -31,7 +28,7 @@ namespace AnonymousApi.Controllers
 
             if (result > 0)
             {
-                return CreatedAtAction(nameof(SendMessage), new ApiResponse<int>
+                return Created("", new ApiResponse<int>
                 {
                     Status = HttpStatusCode.Created,
                     Message = $"Message created successfully with Id {result}",

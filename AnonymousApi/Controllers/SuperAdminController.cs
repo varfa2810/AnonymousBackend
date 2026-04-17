@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Net;
 using AnonymousApplication.DTOs;
 using AnonymousApplication.Interfaces;
 using AnonymousApplication.Models;
@@ -20,7 +21,7 @@ namespace AnonymousApi.Controllers
         }
 
         [HttpPost("approve/{companyId}")]
-        public async Task<ActionResult<ApiResponse<int>>> ApproveCompany(Guid companyId, [FromQuery] bool approve)
+        public async Task<ActionResult<ApiResponse<int>>> ApproveCompany(Guid companyId, [FromQuery, Required] bool approve)
         {
             var result = await _superAdmin.ApproveOrRejectCompanyRequest(companyId, approve);
 
@@ -131,6 +132,14 @@ namespace AnonymousApi.Controllers
         [HttpGet("admins-details/{companyId}")]
         public async Task<ActionResult<ApiResponse<List<CompanyAdminsDetailsDto>>>> GetCompanyAdminsFromCompanyId(Guid companyId)
         {
+            if (companyId == Guid.Empty)
+            {
+                return BadRequest(new ApiResponse<dynamic>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Invalid company id."
+                });
+            }
             var details = await _superAdmin.GetCompanyAdminsFromCompanyId(companyId);
 
             if (details.Any())

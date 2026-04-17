@@ -23,14 +23,6 @@ namespace AnonymousApi.Controllers
         }
 
         [HttpPost("react")]
-        [SwaggerOperation(
-     Summary = "React to Message",
-     Description = "Adds or updates a reaction to a specific message."
- )]
-        [ProducesResponseType(typeof(ApiResponse<ReactedDto>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<ReactedDto>), StatusCodes.Status400BadRequest)]
-        [SwaggerResponse(StatusCodes.Status200OK, "Reaction processed successfully", typeof(ApiResponse<ReactedDto>))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Invalid request or reaction failed")]
         public async Task<ActionResult<ApiResponse<bool>>> ReactToMessage(
      [FromBody, SwaggerRequestBody("Reaction payload", Required = true)] ReactToMessageDto request)
         {
@@ -39,29 +31,28 @@ namespace AnonymousApi.Controllers
             request.UserId = userId;
             var result = await _messages.ReactToMessage(request);
 
-            return Ok(new ApiResponse<bool>
+            if (result)
             {
-                Status = HttpStatusCode.OK,
-                Message = result ? "Reaction added." : "Reaction removed.",
+                return CreatedAtAction(nameof(CommentOnMessage), new ApiResponse<bool>
+                {
+                    Status = HttpStatusCode.Created,
+                    Message = "reacted to comment successfully.",
+                    Data = result
+                });
+
+            }
+
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<bool>
+            {
+                Status = HttpStatusCode.InternalServerError,
+                Message = "Error in reacting.",
                 Data = result
             });
 
         }
 
 
-        /// <summary>
-        /// Get all messages.
-        /// </summary>
-        /// <returns>Returns list of all messages wrapped in ApiResponse.</returns>
         [HttpGet("getAllMessages")]
-        [SwaggerOperation(
-            Summary = "Get All Messages",
-            Description = "Fetches all messages from the system."
-        )]
-        [ProducesResponseType(typeof(ApiResponse<List<MessageDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<List<MessageDto>>), StatusCodes.Status400BadRequest)]
-        [SwaggerResponse(StatusCodes.Status200OK, "Messages fetched successfully", typeof(ApiResponse<List<MessageDto>>))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Failed to fetch messages")]
         public async Task<ActionResult<ApiResponse<List<MessageDto>>>> GetAllMessages()
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
@@ -77,27 +68,27 @@ namespace AnonymousApi.Controllers
                 });
             }
 
-            return BadRequest(new ApiResponse<List<MessageDto>>
+            return NotFound(new ApiResponse<List<MessageDto>>
             {
-                Status = HttpStatusCode.BadRequest,
-                Message = "Error in fetching messages.",
+                Status = HttpStatusCode.NotFound,
+                Message = "No message found.",
+                Data = result
             });
         }
-        /// <summary>
-        /// Get all messages.
-        /// </summary>
-        /// <returns>Returns list of all messages wrapped in ApiResponse.</returns>
+
+
         [HttpGet("getMessageByUserId")]
-        [SwaggerOperation(
-            Summary = "Get All Messages by User id.",
-            Description = "Fetches all messages from the system by User id."
-        )]
-        [ProducesResponseType(typeof(ApiResponse<List<MessageDto>>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<List<MessageDto>>), StatusCodes.Status400BadRequest)]
-        [SwaggerResponse(StatusCodes.Status200OK, "Messages fetched successfully", typeof(ApiResponse<List<MessageDto>>))]
-        [SwaggerResponse(StatusCodes.Status400BadRequest, "Failed to fetch messages")]
         public async Task<ActionResult<ApiResponse<List<MessageDto>>>> GetMessagesByUserId([Required] Guid userid)
         {
+            if (userid == Guid.Empty)
+            {
+                return BadRequest(new ApiResponse<dynamic>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Invalid userid provided."
+                });
+            }
+
             var result = await _messages.GetMessagesByUserId(userid);
 
             if (result != null)
@@ -110,28 +101,30 @@ namespace AnonymousApi.Controllers
                 });
             }
 
-            return BadRequest(new ApiResponse<List<MessageDto>>
+
+            return NotFound(new ApiResponse<List<MessageDto>>
             {
-                Status = HttpStatusCode.BadRequest,
-                Message = "Error in fetching messages.",
+                Status = HttpStatusCode.NotFound,
+                Message = "No message found.",
+                Data = result
             });
         }
 
 
-        /// <summary>
-        /// Deletes a message and its related reactions.
-        /// </summary>
-        /// <param name="messageId">Id of the message to delete.</param>
+
         [HttpDelete("deleteMessage")]
-        [SwaggerOperation(
-            Summary = "Delete Message",
-            Description = "Deletes a message and all related reactions."
-        )]
-        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ApiResponse<string>), StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<ApiResponse<string>>> DeleteMessage(
             [FromQuery, Required, SwaggerParameter("Message Id", Required = true)] int messageId)
         {
+            if (messageId <= 0)
+            {
+                return BadRequest(new ApiResponse<dynamic>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Invalid messageid provided."
+                });
+            }
+
             var result = await _messages.DeleteMessage(messageId);
 
             if (result)
@@ -144,9 +137,9 @@ namespace AnonymousApi.Controllers
                 });
             }
 
-            return BadRequest(new ApiResponse<string>
+            return NotFound(new ApiResponse<string>
             {
-                Status = HttpStatusCode.BadRequest,
+                Status = HttpStatusCode.NotFound,
                 Message = "Message not found or already deleted."
             });
         }
@@ -156,22 +149,21 @@ namespace AnonymousApi.Controllers
         [Authorize]
         public async Task<ActionResult<ApiResponse<bool>>> CommentOnMessage(CommentRequestDto comment)
         {
-            var result  = await _messages.CommentOnMessage(comment);
+            var result = await _messages.CommentOnMessage(comment);
 
             if (result)
             {
-                return Ok(new ApiResponse<bool> { 
-                
-                    Status = HttpStatusCode.OK,
+                return CreatedAtAction(nameof(CommentOnMessage), new ApiResponse<bool>
+                {
+                    Status = HttpStatusCode.Created,
                     Message = "Comment inserted successfully.",
                     Data = result
                 });
             }
 
-            return BadRequest(new ApiResponse<bool>
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<bool>
             {
-
-                Status = HttpStatusCode.BadRequest,
+                Status = HttpStatusCode.InternalServerError,
                 Message = "Error in inserting comment.",
                 Data = result
             });
@@ -181,6 +173,15 @@ namespace AnonymousApi.Controllers
         [Authorize]
         public async Task<ActionResult<ApiResponse<List<CommentResponseDto>>>> GetCommentsByMessageId(int messageid)
         {
+            if (messageid <= 0)
+            {
+                return BadRequest(new ApiResponse<dynamic>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Invalid messageid provided."
+                });
+            }
+
             var comments = await _messages.GetCommentsByMessageId(messageid);
 
             if (comments == null || !comments.Any())

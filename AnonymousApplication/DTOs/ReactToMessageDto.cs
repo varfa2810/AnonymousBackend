@@ -5,7 +5,7 @@ using System.Text;
 
 namespace AnonymousApplication.DTOs
 {
-    public class ReactToMessageDto
+    public class    ReactToMessageDto
     {
         [Required]
         public int MessageId { get; set; }

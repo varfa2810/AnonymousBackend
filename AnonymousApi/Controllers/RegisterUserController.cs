@@ -3,6 +3,7 @@ using AnonymousApplication.Interfaces;
 using AnonymousApplication.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Swashbuckle.AspNetCore.Annotations;
 using System.Net;
@@ -29,18 +30,19 @@ namespace AnonymousApi.Controllers
 
             if (!result)
             {
-                return BadRequest(new ApiResponse<string>
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<bool>
                 {
-                    Status = HttpStatusCode.BadRequest,
-                    Message = "Username already exists.",
+                    Status = HttpStatusCode.InternalServerError,
+                    Message = "Error in registering  employee.",
+                    Data = result
                 });
             }
 
-            return Ok(new ApiResponse<string>
+            return Created("", new ApiResponse<bool>
             {
-                Status = HttpStatusCode.OK,
-                Message = "User registered successfully.",
-                Data = "Success"
+                Status = HttpStatusCode.Created,
+                Message = "Employee registered successfully.",
+                Data = result
             });
         }
 
@@ -53,18 +55,18 @@ namespace AnonymousApi.Controllers
 
             if (!result)
             {
-                return BadRequest(new ApiResponse<bool>
+                return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<bool>
                 {
-                    Status = HttpStatusCode.BadRequest,
-                    Message = "Username already exists.",
+                    Status = HttpStatusCode.InternalServerError,
+                    Message = "Error in registering admin.",
                     Data = result
                 });
             }
 
-            return Ok(new ApiResponse<bool>
+            return Created("", new ApiResponse<bool>
             {
-                Status = HttpStatusCode.OK,
-                Message = "Admin registered successfully.",
+                Status = HttpStatusCode.Created,
+                Message = "Company admin registered successfully.",
                 Data = result
             });
         }
@@ -88,11 +90,10 @@ namespace AnonymousApi.Controllers
                     });
             }
 
-            return BadRequest(new ApiResponse<string>
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<dynamic>
             {
-                Status = System.Net.HttpStatusCode.BadRequest,
+                Status = HttpStatusCode.InternalServerError,
                 Message = "Company registration failed.",
-                Data = "No data to return."
             });
         }
     }
