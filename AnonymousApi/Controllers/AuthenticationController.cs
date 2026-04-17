@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Swashbuckle.AspNetCore.Annotations;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.Design;
 using System.Net;
 
 namespace AnonymousApi.Controllers
@@ -22,7 +23,7 @@ namespace AnonymousApi.Controllers
             _userAuthentication = userAuthentication;
         }
 
-       
+
 
         /// <summary>
         /// Login and get JWT token
@@ -80,6 +81,14 @@ namespace AnonymousApi.Controllers
         [AllowAnonymous]
         public async Task<ActionResult<ApiResponse<bool>>> CheckUniqueUsername([Required] string username)
         {
+            if (string.IsNullOrWhiteSpace(username))
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Invalid username provided."
+                });
+            }
 
             var result = await _userAuthentication.CheckUniqueUsername(username);
 
@@ -106,6 +115,15 @@ namespace AnonymousApi.Controllers
         [EnableRateLimiting("deleteLimiter")]
         public async Task<ActionResult<ApiResponse<int>>> DeleteUser(Guid userId)
         {
+            if (userId == Guid.Empty)
+            {
+                return BadRequest(new ApiResponse<string>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Invalid userId provided."
+                });
+            }
+
             var result = await _userAuthentication.DeleteUser(userId);
 
             if (result > 0)

@@ -33,10 +33,10 @@ namespace AnonymousApi.Controllers
                 });
             }
 
-            return BadRequest(new ApiResponse<List<dynamic>>
+            return NotFound(new ApiResponse<List<dynamic>>
             {
-                Status = HttpStatusCode.BadRequest,
-                Message = "Failed to fetch countries.",
+                Status = HttpStatusCode.NotFound,
+                Message = "No countries found.",
                 Data = countries
             });
         }
@@ -44,6 +44,16 @@ namespace AnonymousApi.Controllers
         [HttpGet("states/{countryId}")]
         public async Task<ActionResult<ApiResponse<List<dynamic>>>> GetStates(int countryId)
         {
+            if (countryId <= 0)
+            {
+                return BadRequest(new ApiResponse<List<dynamic>>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Invalid countryId provided.",
+                    Data = null
+                });
+            }
+
             var states = await _location.GetStates(countryId);
 
             if (states.Any())
@@ -56,10 +66,10 @@ namespace AnonymousApi.Controllers
                 });
             }
 
-            return BadRequest(new ApiResponse<List<dynamic>>
+            return NotFound(new ApiResponse<List<dynamic>>
             {
-                Status = HttpStatusCode.BadRequest,
-                Message = "Failed to fetch states.",
+                Status = HttpStatusCode.NotFound,
+                Message = "No state found.",
                 Data = states
             });
         }
@@ -67,6 +77,16 @@ namespace AnonymousApi.Controllers
         [HttpGet("cities/{stateId}")]
         public async Task<ActionResult<ApiResponse<List<dynamic>>>> GetCities(int stateId)
         {
+            if (stateId <= 0)
+            {
+                return BadRequest(new ApiResponse<List<dynamic>>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Invalid stateId provided.",
+                    Data = null
+                });
+            }
+
             var cities = await _location.GetCities(stateId);
 
             if (cities.Any())
@@ -79,10 +99,10 @@ namespace AnonymousApi.Controllers
                 });
             }
 
-            return BadRequest(new ApiResponse<List<dynamic>>
+            return NotFound(new ApiResponse<List<dynamic>>
             {
-                Status = HttpStatusCode.BadRequest,
-                Message = "Failed to fetch cities.",
+                Status = HttpStatusCode.NotFound,
+                Message = "No city found.",
                 Data = cities
             });
         }
