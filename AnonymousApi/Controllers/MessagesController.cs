@@ -146,7 +146,6 @@ namespace AnonymousApi.Controllers
 
 
         [HttpPost("commentOnMessage")]
-        [Authorize]
         public async Task<ActionResult<ApiResponse<bool>>> CommentOnMessage(CommentRequestDto comment)
         {
             var result = await _messages.CommentOnMessage(comment);
@@ -170,7 +169,6 @@ namespace AnonymousApi.Controllers
         }
 
         [HttpGet("getComments/{messageid}")]
-        [Authorize]
         public async Task<ActionResult<ApiResponse<List<CommentResponseDto>>>> GetCommentsByMessageId(int messageid)
         {
             if (messageid <= 0)
