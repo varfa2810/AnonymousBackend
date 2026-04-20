@@ -11,7 +11,6 @@ namespace AnonymousApi.Controllers
 {
     [Route("api/invite")]
     [ApiController]
-    [Authorize(Roles = "SuperAdmin")]
     public class InviteController : ControllerBase
     {
         private readonly ICompanyAdminInvite _companyAdminInvite;
@@ -26,6 +25,7 @@ namespace AnonymousApi.Controllers
         }
 
         [HttpPost("{companyId}/cadmin-invite")]
+        [Authorize(Roles = "SuperAdmin")]
         public async Task<ActionResult<ApiResponse<string>>> CreateCompanyAdminInviteLink(Guid companyId)
         {
             if (companyId == Guid.Empty)
@@ -120,7 +120,7 @@ namespace AnonymousApi.Controllers
                 Status = HttpStatusCode.InternalServerError,
                 Message = "Link is expired.",
             });
-           
+
         }
     }
 }

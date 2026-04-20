@@ -12,6 +12,7 @@ namespace AnonymousApi.Controllers
 {
     [Route("api/register")]
     [ApiController]
+    [AllowAnonymous]
     public class RegisterUserController : ControllerBase
     {
         private readonly IRegisteruser _register;
@@ -23,7 +24,6 @@ namespace AnonymousApi.Controllers
 
 
         [HttpPost("register-employee")]
-        [AllowAnonymous]
         public async Task<ActionResult<ApiResponse<bool>>> RegisterEmployee([FromBody] RegisterUserDto request)
         {
             var result = await _register.RegisterEmployee(request);
@@ -48,7 +48,6 @@ namespace AnonymousApi.Controllers
 
 
         [HttpPost("register-admin")]
-        [AllowAnonymous]
         public async Task<ActionResult<ApiResponse<bool>>> RegisterCompanyAdmin([FromBody] RegisterCompanyAdminDto request)
         {
             var result = await _register.RegisterCompanyadmin(request);
@@ -73,7 +72,6 @@ namespace AnonymousApi.Controllers
 
 
         [HttpPost("register-company")]
-        [Authorize(Roles = "SuperAdmin, CompanyAdmin")]
         public async Task<ActionResult<ApiResponse<Guid>>> RegisterCompany(RegisterCompanyDto register)
         {
             var companyId = await _register.RegisterCompany(register);
