@@ -26,13 +26,13 @@ namespace AnonymousApi.Controllers
             var result = await _superAdmin.ProcessCompanyRequest(request);
 
             if (result > 0)
-            { 
-                    return Ok(new ApiResponse<bool>
-                    {
-                        Status = HttpStatusCode.OK,
-                        Message = request.Action ? "Company approved successfully." : "Company rejected and deleted successfully.",
-                        Data = request.Action
-                    });
+            {
+                return Ok(new ApiResponse<bool>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = request.Action ? "Company approved successfully." : "Company rejected and deleted successfully.",
+                    Data = request.Action
+                });
             }
 
             return NotFound(new ApiResponse<string>
@@ -44,9 +44,10 @@ namespace AnonymousApi.Controllers
         }
 
         [HttpGet("company-details")]
-        public async Task<ActionResult<ApiResponse<List<CompanyDetailsResponseDto>>>> GetAllCompanyDetails()
+        public async Task<ActionResult<ApiResponse<List<CompanyDetailsResponseDto>>>> GetAllCompanyDetails(
+           bool? companyStatus, int pageNumber = 1, int pageSize = 10)
         {
-            var details = await _superAdmin.GetAllCompanyDetails();
+            var details = await _superAdmin.GetAllCompanyDetails(pageNumber, pageSize, companyStatus);
 
             if (details.Any())
             {

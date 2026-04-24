@@ -62,35 +62,19 @@ namespace AnonymousApplication.Services
             return adminDetails.ToList();
         }
 
-        public async Task<List<CompanyDetailsResponseDto>> GetAllCompanyDetails()
+        public async Task<List<CompanyDetailsResponseDto>> GetAllCompanyDetails(int pageNumber, int pageSize, bool? companyStatus)
         {
             using var connection = _connectionFactory.CreateConnection();
 
-            string query = @"
-                        SELECT 
-                            c.CompanyId,
-                            c.CompanyName,
-                            c.EmployeeStrength,
-                            c.Email,
-                            c.Phone,
-                            c.CompanyAddress,
-                            c.CreatedDate AS CompanyCreatedDate,
-                            c.UpdatedDate AS CompanyUpdatedDate,
-                            c.IsApproved,
-                            c.HREmail,
-                            cb.BranchId,
-                            co.CountryName,
-                            st.StateName,
-                            ct.CityName,
-                            cb.CreatedDate AS BranchCreatedDate
-                        FROM Companies AS c
-                        LEFT JOIN CompanyBranches AS cb ON c.CompanyId = cb.CompanyId
-                        LEFT JOIN Countries AS co ON cb.CountryId = co.CountryId
-                        LEFT JOIN States AS st ON cb.StateId = st.StateId
-                        LEFT JOIN Cities AS ct ON cb.CityId = ct.CityId;
-                        ";
+            var parameters = new
+            {
+                Pagenumber = pageNumber,
+                Pagesize = pageSize,
+                CompanyStatus = companyStatus
+            };
 
-            var details = await connection.QueryAsync<CompanyDetailsResponseDto>(query);
+            var details = await connection.QueryAsync<CompanyDetailsResponseDto>
+                ("GetCompaniesWithBranches", parameters, commandType: CommandType.StoredProcedure);
 
             return details.ToList();
 
@@ -100,32 +84,13 @@ namespace AnonymousApplication.Services
         {
             using var connection = _connectionFactory.CreateConnection();
 
-            string query = @"
-                        SELECT 
-                            c.CompanyId,
-                            c.CompanyName,
-                            c.EmployeeStrength,
-                            c.Email,
-                            c.Phone,
-                            c.CompanyAddress,
-                            c.CreatedDate AS CompanyCreatedDate,
-                            c.UpdatedDate AS CompanyUpdatedDate,
-                            c.IsApproved,
-                            c.HREmail,
-                            cb.BranchId,
-                            co.CountryName,
-                            st.StateName,
-                            ct.CityName,
-                            cb.CreatedDate AS BranchCreatedDate
-                        FROM Companies AS c
-                        LEFT JOIN CompanyBranches AS cb ON c.CompanyId = cb.CompanyId
-                        LEFT JOIN Countries AS co ON cb.CountryId = co.CountryId
-                        LEFT JOIN States AS st ON cb.StateId = st.StateId
-                        LEFT JOIN Cities AS ct ON cb.CityId = ct.CityId
-                        where c.CompanyId = @companyid;
-                        ";
+            var parameters = new
+            {
+                CompanyId = companyId
+            };
 
-            var details = await connection.QueryFirstOrDefaultAsync<CompanyDetailsResponseDto>(query);
+            var details = await connection.QueryFirstOrDefaultAsync<CompanyDetailsResponseDto>
+                  ("GetCompaniesWithBranches", parameters, commandType: CommandType.StoredProcedure);
 
             return details;
         }

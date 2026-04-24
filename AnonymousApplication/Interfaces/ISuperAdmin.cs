@@ -9,7 +9,7 @@ namespace AnonymousApplication.Interfaces
     {
         Task<int> ProcessCompanyRequest(ApproveorRejectCompanyDto request);
 
-        Task<List<CompanyDetailsResponseDto>> GetAllCompanyDetails();
+        Task<List<CompanyDetailsResponseDto>> GetAllCompanyDetails(int pageNumber, int pageSize, bool? companyStatus);
         Task<CompanyDetailsResponseDto?> GetCompanyDetailsFromCompanyId(Guid companyId);
 
         Task<List<CompanyAdminsDetailsDto>> GetAllCompanyAdmins();
