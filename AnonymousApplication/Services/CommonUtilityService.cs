@@ -6,10 +6,10 @@ using System.Text;
 
 namespace AnonymousApplication.Services
 {
-    public class LocationService : ILocation
+    public class CommonUtilityService : ICommonUtilities
     {
         private readonly IDbConnectionFactory _connectionFactory;
-        public LocationService(IDbConnectionFactory connectionFactory)
+        public CommonUtilityService(IDbConnectionFactory connectionFactory)
         {
             _connectionFactory = connectionFactory;
         }
@@ -43,6 +43,25 @@ namespace AnonymousApplication.Services
             return cities.ToList();
         }
 
+        public async Task<List<dynamic>> GetAllRoles()
+        {
+            using var connection = _connectionFactory.CreateConnection();
 
+            string query = @"select RoleId, RoleName from Roles";
+
+            var roles = await connection.QueryAsync<dynamic>(query);
+            return roles.ToList();
+
+        }
+
+        public async Task<List<dynamic>> GetAllCompanyAdminDesignation()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            string query = @"select * from CompanyAdminDesignation";
+
+            var cad = await connection.QueryAsync<dynamic>(query);
+            return cad.ToList();
+        }
     }
 }
