@@ -7,21 +7,21 @@ using System.Net;
 
 namespace AnonymousApi.Controllers
 {
-    [Route("api/location")]
+    [Route("api/common-utility")]
     [ApiController]
     [AllowAnonymous]
-    public class LocationController : ControllerBase
+    public class CommonUtilitiesController : ControllerBase
     {
-        private readonly ILocation _location;
-        public LocationController(ILocation location)
+        private readonly ICommonUtilities _utilities;
+        public CommonUtilitiesController(ICommonUtilities utilities)
         {
-            _location = location;
+            _utilities = utilities;
         }
 
         [HttpGet("countries")]
         public async Task<ActionResult<ApiResponse<List<dynamic>>>> GetCountries()
         {
-            var countries = await _location.GetCountries();
+            var countries = await _utilities.GetCountries();
 
             if (countries.Any())
             {
@@ -54,7 +54,7 @@ namespace AnonymousApi.Controllers
                 });
             }
 
-            var states = await _location.GetStates(countryId);
+            var states = await _utilities.GetStates(countryId);
 
             if (states.Any())
             {
@@ -87,7 +87,7 @@ namespace AnonymousApi.Controllers
                 });
             }
 
-            var cities = await _location.GetCities(stateId);
+            var cities = await _utilities.GetCities(stateId);
 
             if (cities.Any())
             {
@@ -104,6 +104,52 @@ namespace AnonymousApi.Controllers
                 Status = HttpStatusCode.NotFound,
                 Message = "No city found.",
                 Data = cities
+            });
+        }
+
+        [HttpGet("roles")]
+        public async Task<ActionResult<ApiResponse<List<dynamic>>>> GetAllRoles()
+        {
+            var roles = await _utilities.GetAllRoles();
+
+            if (roles.Any())
+            {
+                return Ok(new ApiResponse<List<dynamic>>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "All roles fetched successfully.",
+                    Data = roles
+                });
+            }
+
+            return NotFound(new ApiResponse<List<dynamic>>
+            {
+                Status = HttpStatusCode.NotFound,
+                Message = "No roles found.",
+                Data = roles
+            });
+        }
+
+        [HttpGet("company-admin-designation")]
+        public async Task<ActionResult<ApiResponse<List<dynamic>>>> GetAllCompanyAdminDesignation()
+        {
+            var cad = await _utilities.GetAllRoles();
+
+            if (cad.Any())
+            {
+                return Ok(new ApiResponse<List<dynamic>>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "All designation fetched.",
+                    Data = cad
+                });
+            }
+
+            return NotFound(new ApiResponse<List<dynamic>>
+            {
+                Status = HttpStatusCode.NotFound,
+                Message = "No designation found.",
+                Data = cad
             });
         }
     }

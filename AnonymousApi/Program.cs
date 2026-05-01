@@ -20,7 +20,7 @@ builder.Services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddScoped<ISendMessage, SendMessageService>();
 builder.Services.AddScoped<IMessages, MessagesService>();
 builder.Services.AddScoped<IUserAuthentication, UserAuthenticationService>();
-builder.Services.AddScoped<ILocation, LocationService>();
+builder.Services.AddScoped<ICommonUtilities, CommonUtilityService>();
 builder.Services.AddScoped<ISuperAdmin, SuperAdminService>();
 builder.Services.AddScoped<IEmail, EmailService>();
 builder.Services.AddScoped<IRegisteruser, RegisterUserService>();
