@@ -1,4 +1,5 @@
 ﻿using AnonymousApplication.DTOs;
+using AnonymousApplication.Enums;
 using AnonymousApplication.Interfaces;
 using Dapper;
 using Hangfire;
@@ -91,6 +92,39 @@ namespace AnonymousApplication.Services
 
             var details = await connection.QueryFirstOrDefaultAsync<CompanyDetailsResponseDto>
                   ("GetCompaniesWithBranches", parameters, commandType: CommandType.StoredProcedure);
+
+            return details;
+        }
+
+        public async Task<List<UserDetailsDto>> GetAllUsersDetails(int? roleId, bool? isCompanyApproved, int pageNumber, int pageSize)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            var parameters = new
+            {
+                RoleId = roleId,
+                IsCompanyApproved = isCompanyApproved,
+                PageNumber = pageNumber,
+                PageSize = pageSize
+            };
+
+            var details = await connection.QueryAsync<UserDetailsDto>
+                  ("GetUsersWithDetails", parameters, commandType: CommandType.StoredProcedure);
+
+            return details.ToList();
+        }
+
+        public async Task<UserDetailsDto?> GetUserDetailsById(Guid userId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            var parameters = new
+            {
+                UserId = userId
+            };
+
+            var details = await connection.QueryFirstOrDefaultAsync<UserDetailsDto>
+                  ("GetUsersWithDetails", parameters, commandType: CommandType.StoredProcedure);
 
             return details;
         }

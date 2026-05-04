@@ -1,11 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Net;
-using AnonymousApplication.DTOs;
+﻿using AnonymousApplication.DTOs;
 using AnonymousApplication.Interfaces;
 using AnonymousApplication.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.Design;
+using System.Net;
 
 namespace AnonymousApi.Controllers
 {
@@ -45,7 +46,7 @@ namespace AnonymousApi.Controllers
 
         [HttpGet("company-details")]
         public async Task<ActionResult<ApiResponse<List<CompanyDetailsResponseDto>>>> GetAllCompanyDetails(
-           bool? companyStatus, int pageNumber = 1, int pageSize = 10)
+           [FromQuery] bool? companyStatus, int pageNumber = 1, int pageSize = 10)
         {
             var details = await _superAdmin.GetAllCompanyDetails(pageNumber, pageSize, companyStatus);
 
@@ -147,5 +148,72 @@ namespace AnonymousApi.Controllers
             });
         }
 
+        [HttpGet("user-details")]
+        public async Task<ActionResult<ApiResponse<List<UserDetailsDto>>>> GetAllUsersDetails(
+            [FromQuery] int? roleId, [FromQuery] bool? isCompanyApproved, int pageNumber = 1, int pageSize = 10)
+        {
+            if (roleId <= 0)
+            {
+                return BadRequest(new ApiResponse<dynamic>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Invalid role id.",
+                });
+            }
+
+            var details = await _superAdmin.GetAllUsersDetails(roleId, isCompanyApproved, pageNumber, pageSize);
+
+            if (details.Any())
+            {
+                return Ok(new ApiResponse<List<UserDetailsDto>>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "Fetch user details successfully.",
+                    Data = details
+                });
+            }
+
+            return NotFound(new ApiResponse<List<UserDetailsDto>>
+            {
+                Status = HttpStatusCode.NotFound,
+                Message = "Not found any user.",
+                Data = details
+            });
+
+        }
+
+
+        [HttpGet("user-details/{userId}")]
+        public async Task<ActionResult<ApiResponse<UserDetailsDto>>> GetUserDetailsById(Guid userid)
+        {
+            if (userid == Guid.Empty)
+            {
+                return BadRequest(new ApiResponse<dynamic>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Invalid user id.",
+                });
+            }
+
+            var details = await _superAdmin.GetUserDetailsById(userid);
+
+            if (details != null)
+            {
+                return Ok(new ApiResponse<UserDetailsDto>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "Fetch user details successfully.",
+                    Data = details
+                });
+            }
+
+            return NotFound(new ApiResponse<UserDetailsDto>
+            {
+                Status = HttpStatusCode.NotFound,
+                Message = "Not found any user.",
+                Data = details
+            });
+
+        }
     }
 }

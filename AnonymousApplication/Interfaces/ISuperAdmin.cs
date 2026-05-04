@@ -14,5 +14,8 @@ namespace AnonymousApplication.Interfaces
 
         Task<List<CompanyAdminsDetailsDto>> GetAllCompanyAdmins();
         Task<List<CompanyAdminsDetailsDto>> GetCompanyAdminsFromCompanyId(Guid companyId);
+
+        Task<List<UserDetailsDto>> GetAllUsersDetails(int? roleId, bool? isCompanyApproved, int pageNumber, int pageSize);
+        Task<UserDetailsDto?> GetUserDetailsById(Guid userId);
     }
 }   
