@@ -3,13 +3,16 @@ using AnonymousApplication.Enums;
 using AnonymousApplication.Interfaces;
 using Dapper;
 using Microsoft.AspNetCore.Connections;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using SendGrid;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Net;
 
 namespace AnonymousApplication.Services
 {
@@ -76,7 +79,7 @@ namespace AnonymousApplication.Services
             };
         }
 
-     
+
 
         public async Task<bool> CheckUniqueUsername(string username)
         {
@@ -113,4 +116,4 @@ namespace AnonymousApplication.Services
             return 0;
         }
     }
-}   
+}
