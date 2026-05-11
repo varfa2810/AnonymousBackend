@@ -1,0 +1,4 @@
+﻿IF OBJECT_ID('dbo.USP_GetUsers', 'P') IS NOT NULL
+BEGIN
+    DROP PROCEDURE dbo.USP_GetUsers
+END

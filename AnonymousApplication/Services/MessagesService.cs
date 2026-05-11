@@ -1,6 +1,7 @@
 ﻿using AnonymousApplication.DTOs;
 using AnonymousApplication.Interfaces;
 using Dapper;
+using Microsoft.AspNetCore.RateLimiting;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -19,6 +20,7 @@ namespace AnonymousApplication.Services
             _connectionFactory = connectionFactory;
         }
 
+        [EnableRateLimiting("reactionLimiter")]
         public async Task<bool> ReactToMessage(ReactToMessageDto reactToMessageDto)
         {
             using var connection = _connectionFactory.CreateConnection();
