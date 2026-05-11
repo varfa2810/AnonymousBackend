@@ -2,12 +2,15 @@ using AnonymousApplication.Interfaces;
 using AnonymousApplication.Middleware;
 using AnonymousApplication.Services;
 using AnonymousInfrastructure.Data;
+using AnonymousInfrastructure.Migrations;
 using Hangfire;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
+using System.Security.Claims;
 using System.Text;
+using System.Threading.RateLimiting;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -102,6 +105,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
+builder.Services.AddAuthorization();
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular",
@@ -114,7 +119,6 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddAuthorization();
 
 builder.Services.AddHangfire(config =>
     config.UseSqlServerStorage(
@@ -124,19 +128,90 @@ builder.Services.AddHangfire(config =>
 
 builder.Services.AddRateLimiter(options =>
 {
-    options.AddFixedWindowLimiter("loginLimiter", opt =>
+    options.OnRejected = async (context, token) =>
     {
-        opt.PermitLimit = 5;
-        opt.Window = TimeSpan.FromMinutes(1); 
-        opt.QueueLimit = 0;     
-    });
+        context.HttpContext.Response.StatusCode = 429;
 
-    options.AddFixedWindowLimiter("deleteLimiter", opt =>
-    {
-        opt.PermitLimit = 2;
-        opt.Window = TimeSpan.FromSeconds(10);
-    });
+        await context.HttpContext.Response.WriteAsync(
+            "Too many requests. Please try after sometime.",
+            token);
+    };
+
+    options.AddPolicy("loginLimiter", httpContext =>
+        RateLimitPartition.GetSlidingWindowLimiter(
+            partitionKey:
+                httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+
+            factory: _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 5,
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 6,
+                QueueLimit = 0
+            }));
+
+    options.AddPolicy("deleteLimiter", httpContext =>
+        RateLimitPartition.GetTokenBucketLimiter(
+            partitionKey:
+                httpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown",
+
+            factory: _ => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 2,
+                TokensPerPeriod = 2,
+                ReplenishmentPeriod = TimeSpan.FromSeconds(10),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+
+    // =========================
+    // MESSAGE / POST LIMITER
+    // =========================
+    options.AddPolicy("messageLimiter", httpContext =>
+        RateLimitPartition.GetSlidingWindowLimiter(
+
+            partitionKey:
+                httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "anonymous",
+
+            factory: _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 10, // 10 posts
+                Window = TimeSpan.FromMinutes(1),
+                SegmentsPerWindow = 6,
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+
+
+    // =========================
+    // REACTION / LIKE LIMITER
+    // =========================
+    options.AddPolicy("reactionLimiter", httpContext =>
+        RateLimitPartition.GetTokenBucketLimiter(
+
+            partitionKey:
+                httpContext.User.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                ?? httpContext.Connection.RemoteIpAddress?.ToString()
+                ?? "anonymous",
+
+            factory: _ => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 30,
+                TokensPerPeriod = 30,
+                ReplenishmentPeriod = TimeSpan.FromMinutes(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
 });
+
+if (args.Contains("adb:migrate"))
+{
+    DbUpMigrationService.MigrateDatabase(builder.Configuration.GetConnectionString("Default") ?? string.Empty);
+    return;
+}
+
 
 var app = builder.Build();
 
