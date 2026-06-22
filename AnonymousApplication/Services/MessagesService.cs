@@ -73,40 +73,19 @@ namespace AnonymousApplication.Services
             using var connection = _connectionFactory.CreateConnection();
             connection.Open();
 
-            using var transaction = connection.BeginTransaction();
 
-            try
-            {
-                var deleteReactionsQuery = @"
-                DELETE FROM Reactions
-                WHERE MessageId = @MessageId;";
-
-                await connection.ExecuteAsync(
-                    deleteReactionsQuery,
-                    new { MessageId = messageId },
-                    transaction
-                );
-
-                // 2️⃣ Delete message
-                var deleteMessageQuery = @"
+            var deleteMessageQuery = @"
                 DELETE FROM Messages
                 WHERE Id = @MessageId;";
 
-                var affectedRows = await connection.ExecuteAsync(
-                    deleteMessageQuery,
-                    new { MessageId = messageId },
-                    transaction
-                );
+            var affectedRows = await connection.ExecuteAsync(
+                deleteMessageQuery,
+                new { MessageId = messageId }
+            );
 
-                transaction.Commit();
 
-                return affectedRows > 0;
-            }
-            catch
-            {
-                transaction.Rollback();
-                throw;
-            }
+            return affectedRows > 0;
+
         }
 
         public async Task<bool> CommentOnMessage(CommentRequestDto comment)
@@ -144,5 +123,47 @@ namespace AnonymousApplication.Services
 
             return comments.ToList();
         }
+
+        public async Task<bool> ReportMessage(ViolationRequestDto request)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            var parameters = new DynamicParameters();
+            parameters.Add("@MessageId", request.MessageId);
+            parameters.Add("@ViolationTypeId", request.ViolatedOption);
+            parameters.Add("@Comment", request.Comment);
+            parameters.Add("@ReturnValue", dbType: DbType.Int32, direction: ParameterDirection.ReturnValue);
+
+            await connection.ExecuteAsync(
+                "[ReportMessage]",
+                parameters,
+                commandType: CommandType.StoredProcedure
+            );
+
+            var result = parameters.Get<int>("@ReturnValue");
+            return result == 0 ? true : false;
+        }
+
+        public async Task<ReportResponseDto> GetReportsAsync(int branchId, int pageNumber = 1, int pageSize = 10)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            using var multi = await connection.QueryMultipleAsync(
+                "[GetViolatedReports]",
+                new { BranchId = branchId, PageNumber = pageNumber, PageSize = pageSize },
+                commandType: CommandType.StoredProcedure
+            );
+
+            var reports = (await multi.ReadAsync<ReportDto>()).ToList();
+            var totalRecords = await multi.ReadSingleAsync<int>();
+
+            return new ReportResponseDto
+            {
+                Reports = reports,
+                TotalRecords = totalRecords
+            };
+        }
+
+
     }
 }

@@ -152,5 +152,29 @@ namespace AnonymousApi.Controllers
                 Data = cad
             });
         }
+
+
+        [HttpGet("violations-options")]
+        public async Task<ActionResult<ApiResponse<List<dynamic>>>> GetAllCommentViolationsOptions()
+        {
+            var options = await _utilities.GetAllCommentViolationsOptions();
+
+            if (options.Any())
+            {
+                return Ok(new ApiResponse<List<dynamic>>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "All violations options fetched.",
+                    Data = options
+                });
+            }
+
+            return NotFound(new ApiResponse<List<dynamic>>
+            {
+                Status = HttpStatusCode.NotFound,
+                Message = "No violations options found.",
+                Data = options
+            });
+        }
     }
 }

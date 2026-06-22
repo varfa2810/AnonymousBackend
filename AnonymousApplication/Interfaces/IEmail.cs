@@ -7,6 +7,6 @@ namespace AnonymousApplication.Interfaces
 {
     public interface IEmail
     {
-        Task<string> SendCompanyApproveOrDissapproveEmail(bool action, Guid CompanyId);
+        Task<bool> SendCompanyApproveOrDissapproveEmail(bool action, Guid CompanyId);
     }
 }

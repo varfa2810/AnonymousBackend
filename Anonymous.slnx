@@ -2,5 +2,4 @@
   <Project Path="AnonymousApi/AnonymousApi.csproj" />
   <Project Path="AnonymousApplication/AnonymousApplication.csproj" />
   <Project Path="AnonymousInfrastructure/AnonymousInfrastructure.csproj" />
-  <Project Path="HangfireWorker/HangfireWorker.csproj" />
 </Solution>

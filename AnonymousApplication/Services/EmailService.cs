@@ -34,8 +34,8 @@ namespace AnonymousApplication.Services
         }
 
 
-        [AutomaticRetry(Attempts = 0)]
-        public async Task<string> SendCompanyApproveOrDissapproveEmail(bool action, Guid companyId)
+        [AutomaticRetry(Attempts = 1)]
+        public async Task<bool> SendCompanyApproveOrDissapproveEmail(bool action, Guid companyId)
         {
             using var connection = _connectionFactory.CreateConnection();
 
@@ -106,7 +106,7 @@ namespace AnonymousApplication.Services
 
             }
 
-            return "Email sent successfully";
+            return true;
 
         }
 

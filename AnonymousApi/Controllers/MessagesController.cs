@@ -14,17 +14,12 @@ namespace AnonymousApi.Controllers
     [Route("api/messages")]
     [ApiController]
     [Authorize]
-    public class MessagesController : ControllerBase
+    public class MessagesController(IMessages messages) : ControllerBase
     {
-        private readonly IMessages _messages;
-        public MessagesController(IMessages messages)
-        {
-            _messages = messages;
-        }
+        private readonly IMessages _messages = messages;
 
         [HttpPost("react")]
-        public async Task<ActionResult<ApiResponse<bool>>> ReactToMessage(
-     [FromBody, SwaggerRequestBody("Reaction payload", Required = true)] ReactToMessageDto request)
+        public async Task<ActionResult<ApiResponse<bool>>> ReactToMessage([FromBody] ReactToMessageDto request)
         {
             var userId = Guid.Parse(User.FindFirst(ClaimTypes.NameIdentifier)!.Value);
 
@@ -33,7 +28,7 @@ namespace AnonymousApi.Controllers
 
             if (result)
             {
-                return CreatedAtAction(nameof(CommentOnMessage), new ApiResponse<bool>
+                return CreatedAtAction(nameof(GetMessagesByUserId), new ApiResponse<bool>
                 {
                     Status = HttpStatusCode.Created,
                     Message = "reacted to comment successfully.",
@@ -152,7 +147,7 @@ namespace AnonymousApi.Controllers
 
             if (result)
             {
-                return CreatedAtAction(nameof(CommentOnMessage), new ApiResponse<bool>
+                return CreatedAtAction(nameof(GetCommentsByMessageId), new ApiResponse<bool>
                 {
                     Status = HttpStatusCode.Created,
                     Message = "Comment inserted successfully.",
@@ -182,13 +177,13 @@ namespace AnonymousApi.Controllers
 
             var comments = await _messages.GetCommentsByMessageId(messageid);
 
-            if (comments == null || !comments.Any())
+            if (comments == null || comments.Count == 0)
             {
-                return NotFound(new ApiResponse<List<CommentResponseDto>>
+                return NotFound(new ApiResponse<dynamic>
                 {
                     Status = HttpStatusCode.NotFound,
                     Message = "No comments found for this message.",
-                    Data = new List<CommentResponseDto>()
+                    Data = null
                 });
             }
 
@@ -198,6 +193,63 @@ namespace AnonymousApi.Controllers
                 Message = "Fetched all comments.",
                 Data = comments
             });
+        }
+
+        [HttpPost("reportMessage")]
+        public async Task<ActionResult<ApiResponse<bool>>> ReportMessage(ViolationRequestDto request)
+        {
+            if (request.MessageId <= 0 || request.ViolatedOption <= 0)
+            {
+                return BadRequest(new ApiResponse<bool>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Message id and Violation id cannot be 0.",
+                    Data = false
+                });
+            }
+
+            var result = await _messages.ReportMessage(request);
+
+            if (result)
+            {
+                return Ok(new ApiResponse<bool>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "Message reported successfully.",
+                    Data = result
+                });
+            }
+
+            return StatusCode(StatusCodes.Status500InternalServerError, new ApiResponse<bool>
+            {
+                Status = HttpStatusCode.InternalServerError,
+                Message = "Error in reporting message.",
+                Data = result
+            });
+        }
+
+        [HttpGet("getReportedMessages/{branchId}")]
+        public async Task<ActionResult<ApiResponse<ReportResponseDto>>> GetReports(int branchId, int pageNumber = 1, int pageSize = 10)
+        {
+            var reports = await _messages.GetReportsAsync(branchId, pageNumber, pageSize);
+
+            if (reports.TotalRecords > 0)
+            {
+                return Ok(new ApiResponse<ReportResponseDto>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "Fetched all reports.",
+                    Data = reports
+                });
+            }
+
+            return NotFound(new ApiResponse<int>
+            {
+                Status = HttpStatusCode.NotFound,
+                Message = "No reports found for this branch.",
+                Data = reports.TotalRecords
+            });
+
         }
     }
 }

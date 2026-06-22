@@ -26,21 +26,20 @@ namespace AnonymousApplication.Services
         public async Task<int> ProcessCompanyRequest(ApproveorRejectCompanyDto request)
         {
             using var connection = _connectionFactory.CreateConnection();
+            string query = string.Empty;
 
             if (request.Action)
             {
-                string query = @"UPDATE Companies SET IsApproved = 1 WHERE CompanyId = @companyid;";
-                var rowsreturned = await connection.ExecuteAsync(query, new { companyid = request.CompanyId });
-                BackgroundJob.Enqueue<IEmail>(x => x.SendCompanyApproveOrDissapproveEmail(request.Action, request.CompanyId));
-                return rowsreturned;
+                query = @"UPDATE Companies SET IsApproved = 1 WHERE CompanyId = @companyid;";
             }
             else
             {
-                string query = @"DELETE FROM Companies WHERE CompanyId = @companyid;";
-                var rowsreturned = await connection.ExecuteAsync(query, new { companyid = request.CompanyId });
-                BackgroundJob.Enqueue<IEmail>(x => x.SendCompanyApproveOrDissapproveEmail(request.Action, request.CompanyId));
-                return rowsreturned;
+                query = @"DELETE FROM Companies WHERE CompanyId = @companyid;";
             }
+
+            var rowsreturned = await connection.ExecuteAsync(query, new { companyid = request.CompanyId });
+            BackgroundJob.Enqueue<IEmail>(x => x.SendCompanyApproveOrDissapproveEmail(request.Action, request.CompanyId));
+            return rowsreturned;
         }
 
         public async Task<List<CompanyAdminsDetailsDto>> GetAllCompanyAdmins()

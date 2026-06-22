@@ -63,5 +63,14 @@ namespace AnonymousApplication.Services
             var cad = await connection.QueryAsync<dynamic>(query);
             return cad.ToList();
         }
+        public async Task<List<dynamic>> GetAllCommentViolationsOptions()
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            string query = @"select * from ViolationOptions";
+
+            var options = await connection.QueryAsync<dynamic>(query);
+            return options.ToList();
+        }
     }
 }
