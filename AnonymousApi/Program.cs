@@ -4,6 +4,7 @@ using AnonymousApplication.Services;
 using AnonymousInfrastructure.Data;
 using AnonymousInfrastructure.Migrations;
 using Hangfire;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
@@ -30,7 +31,6 @@ builder.Services.AddScoped<IRegisteruser, RegisterUserService>();
 builder.Services.AddScoped<ICompanyAdminInvite, InviteService>();
 builder.Services.AddScoped<ICompanyEmployeeInvite, InviteService>();
 builder.Services.AddScoped<IInviteVerify, InviteService>();
-builder.Services.AddScoped<IHangFire, HangfireService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -73,7 +73,7 @@ builder.Services.AddSwaggerGen(options =>
         return requirement;
     });
 
-
+    options.EnableAnnotations();
 });
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
@@ -113,8 +113,8 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins("http://localhost:4200")
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
+                  .WithHeaders("Content-Type", "Authorization")
+                  .WithMethods("GET", "POST", "PUT", "DELETE")
                   .AllowCredentials();
         });
 });
@@ -132,9 +132,7 @@ builder.Services.AddRateLimiter(options =>
     {
         context.HttpContext.Response.StatusCode = 429;
 
-        await context.HttpContext.Response.WriteAsync(
-            "Too many requests. Please try after sometime.",
-            token);
+        await context.HttpContext.Response.WriteAsync("Too many requests. Please try after sometime.", token);
     };
 
     options.AddPolicy("loginLimiter", httpContext =>

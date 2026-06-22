@@ -62,7 +62,7 @@ namespace AnonymousApplication.Services
 
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
-            var expiry = DateTime.UtcNow.AddHours(2);
+            var expiry = DateTime.UtcNow.AddHours(24);
 
             var token = new JwtSecurityToken(
                 issuer: _configuration["Jwt:Issuer"],

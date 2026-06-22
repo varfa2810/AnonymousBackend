@@ -23,6 +23,9 @@ namespace AnonymousApi.Controllers
         }
 
 
+        [SwaggerOperation(
+            Summary = "This will register an employee only if the company he is registering for is approved by Super-Admin."
+        )]
         [HttpPost("register-employee")]
         public async Task<ActionResult<ApiResponse<bool>>> RegisterEmployee([FromBody] RegisterUserDto request)
         {
@@ -47,6 +50,9 @@ namespace AnonymousApi.Controllers
         }
 
 
+        [SwaggerOperation(
+            Summary = "This will register an admin only if the company he is registering for is approved by Super-Admin."
+        )]
         [HttpPost("register-admin")]
         public async Task<ActionResult<ApiResponse<bool>>> RegisterCompanyAdmin([FromBody] RegisterCompanyAdminDto request)
         {

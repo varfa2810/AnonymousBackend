@@ -16,5 +16,8 @@ namespace AnonymousApplication.Interfaces
         Task<bool> CommentOnMessage(CommentRequestDto comment);
         Task<List<CommentResponseDto>> GetCommentsByMessageId(int messageId);
 
+        Task<bool> ReportMessage(ViolationRequestDto request);
+        Task<ReportResponseDto> GetReportsAsync(int branchId, int pageNumber = 1, int pageSize = 10);
+
     }
 }

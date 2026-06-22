@@ -49,7 +49,8 @@ namespace AnonymousApi.Controllers
                 HttpOnly = true,
                 Secure = true,
                 SameSite = SameSiteMode.None,
-                Expires = result.Expiration
+                Expires = result.Expiration,
+                Path = "/"
             });
 
             return Ok(new ApiResponse<LoginResponseDto>

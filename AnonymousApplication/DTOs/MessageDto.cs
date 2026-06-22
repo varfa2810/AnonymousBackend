@@ -12,6 +12,7 @@ namespace AnonymousApplication.DTOs
 
         public DateTime CreatedDate { get; set; }
 
+        public int CommentCount  { get; set; }
         public int Likes { get; set; }
 
         public int Dislikes { get; set; }

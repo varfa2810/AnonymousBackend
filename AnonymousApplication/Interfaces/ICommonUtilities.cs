@@ -12,6 +12,7 @@ namespace AnonymousApplication.Interfaces
         Task<List<dynamic>> GetCities(int stateId);
         Task<List<dynamic>> GetAllRoles();
         Task<List<dynamic>> GetAllCompanyAdminDesignation();
+        Task<List<dynamic>> GetAllCommentViolationsOptions();
 
     }
 }

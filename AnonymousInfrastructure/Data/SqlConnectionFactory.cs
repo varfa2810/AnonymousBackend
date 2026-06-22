@@ -8,14 +8,9 @@ using System.Text;
 
 namespace AnonymousInfrastructure.Data
 {
-    public class SqlConnectionFactory : IDbConnectionFactory
+    public class SqlConnectionFactory(IConfiguration configuration) : IDbConnectionFactory
     {
-        private readonly string _connectionString;
-
-        public SqlConnectionFactory(IConfiguration configuration)
-        {
-            _connectionString = configuration.GetConnectionString("Default")!;
-        }
+        private readonly string _connectionString = configuration.GetConnectionString("Default")!;
 
         public IDbConnection CreateConnection()
             => new SqlConnection(_connectionString);
