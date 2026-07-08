@@ -6,13 +6,10 @@ using System.Text;
 
 namespace AnonymousApplication.Services
 {
-    public class CommonUtilityService : ICommonUtilities
+    public class CommonUtilityService(IDbConnectionFactory connectionFactory) : ICommonUtilities
     {
-        private readonly IDbConnectionFactory _connectionFactory;
-        public CommonUtilityService(IDbConnectionFactory connectionFactory)
-        {
-            _connectionFactory = connectionFactory;
-        }
+        private readonly IDbConnectionFactory _connectionFactory = connectionFactory;
+
         public async Task<List<dynamic>> GetCountries()
         {
             using var connection = _connectionFactory.CreateConnection();
@@ -20,7 +17,7 @@ namespace AnonymousApplication.Services
             string query = @"select * from Countries;";
 
             var countries = await connection.QueryAsync<dynamic>(query);
-            return countries.ToList();
+            return [.. countries];
         }
 
         public async Task<List<dynamic>> GetStates(int countryId)
@@ -30,7 +27,7 @@ namespace AnonymousApplication.Services
             string query = @"select StateId, StateName from States where CountryId = @countryid;";
 
             var states = await connection.QueryAsync<dynamic>(query, new { countryid = countryId });
-            return states.ToList();
+            return [.. states];
         }
 
         public async Task<List<dynamic>> GetCities(int stateId)
@@ -40,7 +37,7 @@ namespace AnonymousApplication.Services
             string query = @"select CityId, CityName from Cities where StateId = @stateid;";
 
             var cities = await connection.QueryAsync<dynamic>(query, new { stateid = stateId });
-            return cities.ToList();
+            return [.. cities];
         }
 
         public async Task<List<dynamic>> GetAllRoles()
@@ -50,7 +47,7 @@ namespace AnonymousApplication.Services
             string query = @"select RoleId, RoleName from Roles";
 
             var roles = await connection.QueryAsync<dynamic>(query);
-            return roles.ToList();
+            return [.. roles];
 
         }
 
@@ -61,7 +58,7 @@ namespace AnonymousApplication.Services
             string query = @"select * from CompanyAdminDesignation";
 
             var cad = await connection.QueryAsync<dynamic>(query);
-            return cad.ToList();
+            return [.. cad];
         }
         public async Task<List<dynamic>> GetAllCommentViolationsOptions()
         {
@@ -70,7 +67,7 @@ namespace AnonymousApplication.Services
             string query = @"select * from ViolationOptions";
 
             var options = await connection.QueryAsync<dynamic>(query);
-            return options.ToList();
+            return [.. options];
         }
     }
 }
