@@ -204,17 +204,23 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-if (args.Contains("adb:migrate"))
-{
-    DbUpMigrationService.MigrateDatabase(builder.Configuration.GetConnectionString("Default") ?? string.Empty);
-    return;
-}
+// NOTE: The below code has been deprecated for database migration.
+// After pulling the latest code, please run the migration command ONLY if new migration scripts have been added.
+// Important: Do not run migrations unnecessarily — execute them only when new scripts are present after the latest pull.
+
+// dotnet run --project AnonymousMigrator\AnonymousMigrator.csproj --environment Local
+
+//if (args.Contains("adb:migrate"))
+//{
+//    DbUpMigrationService.MigrateDatabase(builder.Configuration.GetConnectionString("Default") ?? string.Empty);
+//    return;
+//}
 
 
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
+if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Local")
 {
     app.UseSwagger();
     app.UseSwaggerUI();

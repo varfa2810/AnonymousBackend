@@ -2,4 +2,5 @@
   <Project Path="AnonymousApi/AnonymousApi.csproj" />
   <Project Path="AnonymousApplication/AnonymousApplication.csproj" />
   <Project Path="AnonymousInfrastructure/AnonymousInfrastructure.csproj" />
+  <Project Path="AnonymousMigrator/AnonymousMigrator.csproj" Id="f019a8c0-6cd6-4c9c-9ec6-fc8bfaac9572" />
 </Solution>

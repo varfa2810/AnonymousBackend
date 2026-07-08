@@ -14,14 +14,9 @@ namespace AnonymousApi.Controllers
 {
     [Route("api/auth")]
     [ApiController]
-    public class AuthenticationController : ControllerBase
+    public class AuthenticationController(IUserAuthentication userAuthentication) : ControllerBase
     {
-        private readonly IUserAuthentication _userAuthentication;
-
-        public AuthenticationController(IUserAuthentication userAuthentication)
-        {
-            _userAuthentication = userAuthentication;
-        }
+        private readonly IUserAuthentication _userAuthentication = userAuthentication;
 
 
 
