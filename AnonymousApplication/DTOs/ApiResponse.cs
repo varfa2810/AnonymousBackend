@@ -3,12 +3,12 @@ using System.Collections.Generic;
 using System.Net;
 using System.Text;
 
-namespace AnonymousApplication.Models
+namespace AnonymousApplication.DTOs
 {
-    public class ApiResponse<T>
+    public sealed class ApiResponse<T>
     {
         public HttpStatusCode Status { get; set; }
-        public string Message { get; set; } = string.Empty;
+        public string Message { get; set; } = default!;
         public T? Data { get; set; }
     }
 }

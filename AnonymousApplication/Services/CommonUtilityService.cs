@@ -1,7 +1,9 @@
-﻿using AnonymousApplication.Interfaces;
+﻿using AnonymousApplication.DTOs;
+using AnonymousApplication.Interfaces;
 using Dapper;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Text;
 
 namespace AnonymousApplication.Services

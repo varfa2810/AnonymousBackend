@@ -9,10 +9,11 @@ using Microsoft.IdentityModel.Tokens;
 using SendGrid;
 using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IdentityModel.Tokens.Jwt;
+using System.Net;
 using System.Security.Claims;
 using System.Text;
-using System.Net;
 
 namespace AnonymousApplication.Services
 {
@@ -114,6 +115,19 @@ namespace AnonymousApplication.Services
                 return deleted;
             }
             return 0;
+        }
+
+        public async Task<UserProfileResponseDto?> GetUserProfileByUserId(Guid userId)
+        {
+            using var connection = _connectionFactory.CreateConnection();
+
+            var details = await connection.QuerySingleOrDefaultAsync<UserProfileResponseDto>(
+                "[dbo].[GetUserProfileByUserId]",
+                new { UserId = userId },
+                commandType: CommandType.StoredProcedure
+            );
+
+            return details;
         }
     }
 }

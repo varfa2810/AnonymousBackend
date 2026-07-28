@@ -85,6 +85,7 @@ namespace AnonymousApplication.Services
                           where c.CompanyId = @companyid;";
 
             var companyDetails = await connection.QuerySingleOrDefaultAsync<dynamic>(query, new { companyId });
+            
 
             var key = new SymmetricSecurityKey(
                Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
@@ -92,12 +93,13 @@ namespace AnonymousApplication.Services
             var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var claims = new[]
-            {
-                  new Claim("company", companyDetails?.CompanyName),
-                  new Claim("branch", companyDetails?.BranchId),
-                  new Claim("country", companyDetails?.CountryName),
-                  new Claim("city", companyDetails?.CityName),
-            };
+   {
+    new Claim("company", companyDetails?.CompanyName ?? string.Empty),
+    new Claim("branch", companyDetails?.BranchId.ToString() ?? string.Empty),
+    new Claim("country", companyDetails?.CountryName ?? string.Empty),
+    new Claim("city", companyDetails?.CityName ?? string.Empty),
+};
+
 
             var token = new JwtSecurityToken(
                 issuer: _config["Jwt:Issuer"],
@@ -147,6 +149,7 @@ namespace AnonymousApplication.Services
                 var principal = tokenHandler.ValidateToken(token, validationParameters, out var validatedToken);
 
                 var companyName = principal.FindFirst("company")?.Value;
+                var branch = principal.FindFirst("branch")?.Value;
                 var country = principal.FindFirst("country")?.Value;
                 var city = principal.FindFirst("city")?.Value;
 
