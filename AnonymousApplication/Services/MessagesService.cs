@@ -159,8 +159,8 @@ namespace AnonymousApplication.Services
 
             return new ReportResponseDto
             {
+                TotalRecords = totalRecords,
                 Reports = reports,
-                TotalRecords = totalRecords
             };
         }
 

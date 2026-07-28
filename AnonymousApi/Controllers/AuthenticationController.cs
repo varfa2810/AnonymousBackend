@@ -1,6 +1,5 @@
 ﻿using AnonymousApplication.DTOs;
 using AnonymousApplication.Interfaces;
-using AnonymousApplication.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -164,6 +163,40 @@ namespace AnonymousApi.Controllers
                 Status = HttpStatusCode.OK,
                 Message = "Logged out successfully.",
                 Data = true
+            });
+        }
+
+        [HttpGet("profile/{userId}")]
+        [Authorize]
+        public async Task<ActionResult<ApiResponse<UserProfileResponseDto>>> GetUserProfileByUserId(Guid userId)
+        {
+            if (userId == Guid.Empty)
+            {
+                return BadRequest(new ApiResponse<dynamic>
+                {
+                    Status = HttpStatusCode.BadRequest,
+                    Message = "Invalid UserId type.",
+                    Data = null
+                });
+            }
+
+            var details = await _userAuthentication.GetUserProfileByUserId(userId);
+
+            if (details != null)
+            {
+                return Ok(new ApiResponse<UserProfileResponseDto>
+                {
+                    Status = HttpStatusCode.OK,
+                    Message = "Profile details.",
+                    Data = details
+                });
+            }
+
+            return NotFound(new ApiResponse<dynamic>
+            {
+                Status = HttpStatusCode.NotFound,
+                Message = "User not found.",
+                Data = null
             });
         }
     }

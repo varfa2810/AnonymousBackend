@@ -1,6 +1,5 @@
 ﻿using AnonymousApplication.DTOs;
 using AnonymousApplication.Interfaces;
-using AnonymousApplication.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.HttpResults;
