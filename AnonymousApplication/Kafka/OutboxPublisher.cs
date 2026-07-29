@@ -3,6 +3,7 @@ using Hangfire;
 using Microsoft.AspNetCore.Connections;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -14,11 +15,13 @@ namespace AnonymousApplication.Kafka
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private readonly IDbConnectionFactory _connectionfactory;
+        private readonly ILogger<OutboxPublisher> _logger;
 
-        public OutboxPublisher(IServiceScopeFactory scopeFactory, IDbConnectionFactory connectionfactory)
+        public OutboxPublisher(IServiceScopeFactory scopeFactory, IDbConnectionFactory connectionfactory, ILogger<OutboxPublisher> logger)
         {
             _scopeFactory = scopeFactory;
             _connectionfactory = connectionfactory;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -47,12 +50,7 @@ namespace AnonymousApplication.Kafka
                         }
                         catch (Exception ex)
                         {
-                            //_logger.LogError(
-                            //    ex,
-                            //    "Failed to publish outbox message {MessageId}",
-                            //    message.Id);
-
-                            Console.WriteLine($"Failed to publish outbox message {message.Id}, {ex.Message}");
+                            _logger.LogError(ex, "Failed to publish outbox message {MessageId}", message.Id);
 
                             await repository.IncreaseRetryCount(connection, message.Id);
                         }
@@ -63,12 +61,11 @@ namespace AnonymousApplication.Kafka
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
-                Console.WriteLine("Outbox publisher is stopping.");
+                _logger.LogError("Outbox publisher is stopping.");
             }
             catch (Exception ex)
             {
-
-                Console.WriteLine("Outbox publisher stopped unexpectedly.");
+                _logger.LogError("Outbox publisher stopped unexpectedly.");
             }
         }
     }

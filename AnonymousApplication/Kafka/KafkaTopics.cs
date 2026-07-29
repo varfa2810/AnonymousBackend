@@ -14,7 +14,7 @@ namespace AnonymousApplication.Kafka
         new()
         {
             Name = "message.created.v1",
-            Partitions = 12,
+            Partitions = 2,
             ReplicationFactor = 1
         },
 
