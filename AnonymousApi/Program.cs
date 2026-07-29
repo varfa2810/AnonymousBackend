@@ -1,4 +1,6 @@
+using AnonymousApplication.DTOs;
 using AnonymousApplication.Interfaces;
+using AnonymousApplication.Kafka;
 using AnonymousApplication.Middleware;
 using AnonymousApplication.Services;
 using AnonymousInfrastructure.Data;
@@ -20,7 +22,7 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddScoped<IDbConnectionFactory, SqlConnectionFactory>();
+builder.Services.AddSingleton<IDbConnectionFactory, SqlConnectionFactory>();
 builder.Services.AddScoped<ISendMessage, SendMessageService>();
 builder.Services.AddScoped<IMessages, MessagesService>();
 builder.Services.AddScoped<IUserAuthentication, UserAuthenticationService>();
@@ -31,6 +33,13 @@ builder.Services.AddScoped<IRegisteruser, RegisterUserService>();
 builder.Services.AddScoped<ICompanyAdminInvite, InviteService>();
 builder.Services.AddScoped<ICompanyEmployeeInvite, InviteService>();
 builder.Services.AddScoped<IInviteVerify, InviteService>();
+builder.Services.AddScoped<IOutbox, OutboxService>();
+builder.Services.Configure<KafkaOptions>(builder.Configuration.GetSection(KafkaOptions.SectionName));
+builder.Services.AddSingleton<IKafkaProducer, KafkaProducerService>();
+builder.Services.AddHostedService<OutboxPublisher>();
+builder.Services.AddHostedService<KafkaConsumer>();
+builder.Services.AddSingleton<KafkaTopicInitializer>();
+builder.Services.AddHostedService<KafkaTopicInitializerHostedService>();
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
@@ -204,20 +213,14 @@ builder.Services.AddRateLimiter(options =>
             }));
 });
 
-// NOTE: The below code has been deprecated for database migration.
 // After pulling the latest code, please run the migration command ONLY if new migration scripts have been added.
 // Important: Do not run migrations unnecessarily — execute them only when new scripts are present after the latest pull.
 
 // dotnet run --project AnonymousMigrator\AnonymousMigrator.csproj --environment Local
 
-//if (args.Contains("adb:migrate"))
-//{
-//    DbUpMigrationService.MigrateDatabase(builder.Configuration.GetConnectionString("Default") ?? string.Empty);
-//    return;
-//}
-
 
 var app = builder.Build();
+
 
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment() || app.Environment.EnvironmentName == "Local")

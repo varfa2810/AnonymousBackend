@@ -1,4 +1,5 @@
-﻿using System;
+﻿using AnonymousApplication.Services;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Text;
@@ -15,4 +16,6 @@ namespace AnonymousApplication.DTOs
         [Required]
         public Guid UserId { get; set; } = Guid.Empty;
     }
+
+    public class MessageCreatedEvent : SendMessageDto;
 }
