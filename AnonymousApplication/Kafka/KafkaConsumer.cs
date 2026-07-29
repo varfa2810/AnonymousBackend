@@ -1,6 +1,7 @@
 ﻿using AnonymousApplication.DTOs;
 using Confluent.Kafka;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,9 @@ namespace AnonymousApplication.Kafka
     public sealed class KafkaConsumer : BackgroundService
     {
         private readonly IConsumer<Ignore, string> _consumer;
+        private readonly ILogger<KafkaConsumer> _logger;
 
-        public KafkaConsumer(IOptions<KafkaOptions> options)
+        public KafkaConsumer(IOptions<KafkaOptions> options, ILogger<KafkaConsumer> logger)
         {
             var config = new ConsumerConfig
             {
@@ -25,11 +27,8 @@ namespace AnonymousApplication.Kafka
 
             _consumer = new ConsumerBuilder<Ignore, string>(config).Build();
 
-            //Add more topics here...
-            _consumer.Subscribe( new[] 
-            {
-                KafkaTopics.MessageCreated
-            });
+            _logger = logger;
+
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -38,28 +37,49 @@ namespace AnonymousApplication.Kafka
             {
                 try
                 {
-                    var result = _consumer.Consume(stoppingToken);
+                    _consumer.Subscribe(new[]
+                    {
+                        KafkaTopics.MessageCreated
+                    });
 
-                    if (result == null)
-                        continue;
+                    _logger.LogInformation("Kafka Consumer Started.");
 
-                    var message = JsonSerializer.Deserialize<MessageCreatedEvent>(result.Message.Value);
+                    while (!stoppingToken.IsCancellationRequested)
+                    {
+                        var result = _consumer.Consume(stoppingToken);
 
-                    //Instead of this add additional logic to perform
-                    Console.WriteLine($"Message : {message?.Message}");
+                        if (result == null)
+                            continue;
 
-                    _consumer.Commit(result);
+                        var message = JsonSerializer.Deserialize<MessageCreatedEvent>(
+                            result.Message.Value);
+
+                        //Here add the logic for consuption..
+                        _logger.LogInformation($"Consuption message: {message?.Message}");
+
+                        _consumer.Commit(result);
+                    }
+                }
+                catch (ConsumeException ex)
+                {
+                    _logger.LogError($"Consume Error : {ex.Error.Reason}");
+
+                    _consumer.Unsubscribe();
+
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                }
+                catch (KafkaException ex)
+                {
+                    _logger.LogError($"Kafka Error : {ex.Error.Reason}");
+
+                    _consumer.Unsubscribe();
+
+                    await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
                 }
                 catch (OperationCanceledException)
                 {
                     break;
                 }
-                catch
-                {
-                    throw;
-                }
-
-                await Task.CompletedTask;
             }
         }
 

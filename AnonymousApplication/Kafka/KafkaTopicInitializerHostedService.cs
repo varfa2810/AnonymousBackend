@@ -23,20 +23,17 @@ namespace AnonymousApplication.Kafka
 
         public async Task StartAsync(CancellationToken cancellationToken)
         {
-            //_logger.LogInformation("Initializing Kafka topics...");
-            Console.WriteLine("Initializing Kafka topics...");
+            _logger.LogInformation("Initializing Kafka topics...");
 
             try
             {
                 await _initializer.InitializeAsync(cancellationToken);
 
-                //_logger.LogInformation("Kafka topics initialized successfully.");
-                Console.WriteLine("Kafka topics initialized successfully.");
+                _logger.LogInformation("Kafka topics initialized successfully.");
             }
             catch (Exception ex)
             {
-                //_logger.LogCritical(ex, "Unable to initialize Kafka topics.");
-                Console.WriteLine("Unable to initialize Kafka topics.");
+                _logger.LogCritical(ex, "Unable to initialize Kafka topics.");
 
                 throw;
             }
