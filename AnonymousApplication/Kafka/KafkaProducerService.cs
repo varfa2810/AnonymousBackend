@@ -1,5 +1,6 @@
 ﻿using AnonymousApplication.DTOs;
 using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
@@ -12,8 +13,9 @@ namespace AnonymousApplication.Kafka
     {
         private readonly IProducer<Null, string> _producer;
         private readonly KafkaOptions _options;
+        private readonly ILogger<KafkaProducerService> _logger;
 
-        public KafkaProducerService(IOptions<KafkaOptions> options)
+        public KafkaProducerService(IOptions<KafkaOptions> options, ILogger<KafkaProducerService> logger)
         {
             _options = options.Value;
 
@@ -29,6 +31,8 @@ namespace AnonymousApplication.Kafka
             };
 
             _producer = new ProducerBuilder<Null, string>(config).Build();
+
+            _logger = logger;
 
         }
 
@@ -55,10 +59,7 @@ namespace AnonymousApplication.Kafka
             }
             catch (ProduceException<Null, string> ex)
             {
-                Console.WriteLine($"Code      : {ex.Error.Code}");
-                Console.WriteLine($"Reason    : {ex.Error.Reason}");
-                Console.WriteLine($"IsFatal   : {ex.Error.IsFatal}");
-                Console.WriteLine($"Topic     : {topic}");
+                _logger.LogError($"Reason    : {ex.Error.Reason}");
 
                 throw;
             }

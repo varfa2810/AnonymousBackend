@@ -1,24 +1,45 @@
 ﻿using AnonymousApplication.DTOs;
 using AnonymousApplication.Interfaces;
+using AnonymousApplication.Redis;
 using Dapper;
+using Microsoft.AspNetCore.Connections;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Diagnostics;
 using System.Text;
+using static Confluent.Kafka.ConfigPropertyNames;
 
 namespace AnonymousApplication.Services
 {
-    public class CommonUtilityService(IDbConnectionFactory connectionFactory) : ICommonUtilities
+    public class CommonUtilityService(
+        IDbConnectionFactory connectionFactory,
+        IRedisCache cache,
+        ILogger<CommonUtilityService> logger) : ICommonUtilities
     {
         private readonly IDbConnectionFactory _connectionFactory = connectionFactory;
+        private readonly IRedisCache _cache = cache;
+        private readonly ILogger<CommonUtilityService> _logger = logger;
 
         public async Task<List<dynamic>> GetCountries()
         {
             using var connection = _connectionFactory.CreateConnection();
 
+            string key = CacheKeys.CountryList;
             string query = @"select * from Countries;";
 
+            var cachedCountries = await _cache.GetAsync<List<dynamic>>(key);
+
+            if (cachedCountries != null)
+            {
+                return cachedCountries;
+            }
+
             var countries = await connection.QueryAsync<dynamic>(query);
+
+            await _cache.SetAsync(key, countries, TimeSpan.FromHours(6));
+
             return [.. countries];
         }
 

@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 using Serilog;
+using StackExchange.Redis;
 using System.Security.Claims;
 using System.Text;
 using System.Threading.RateLimiting;
@@ -49,6 +50,19 @@ builder.Services.AddHostedService<OutboxPublisher>();
 builder.Services.AddHostedService<KafkaConsumer>();
 builder.Services.AddSingleton<KafkaTopicInitializer>();
 builder.Services.AddHostedService<KafkaTopicInitializerHostedService>();
+builder.Services.AddSingleton<IRedisCache, RedisCacheService>();
+
+builder.Services.AddSingleton<IConnectionMultiplexer>(sp =>
+{
+    var configuration = sp.GetRequiredService<IConfiguration>();
+
+    var connectionString = configuration.GetConnectionString("Redis");
+
+    if (string.IsNullOrWhiteSpace(connectionString))
+        throw new InvalidOperationException("Redis connection string is missing.");
+
+    return ConnectionMultiplexer.Connect(connectionString);
+});
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>

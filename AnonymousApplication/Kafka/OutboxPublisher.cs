@@ -65,7 +65,7 @@ namespace AnonymousApplication.Kafka
             }
             catch (Exception ex)
             {
-                _logger.LogError("Outbox publisher stopped unexpectedly.");
+                _logger.LogError($"Outbox publisher stopped unexpectedly. {ex.Message}");
             }
         }
     }

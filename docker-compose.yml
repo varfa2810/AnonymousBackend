@@ -76,5 +76,34 @@ services:
 
     restart: unless-stopped
 
+  redis:
+    image: redis:8.2
+    container_name: redis
+   
+    ports:
+      - "6379:6379"
+   
+    command:
+      [
+        "redis-server",
+        "--requirepass",
+        "StrongPassword123",
+        "--appendonly",
+        "yes",
+      ]
+   
+    volumes:
+      - redis-data:/data
+   
+    restart: unless-stopped
+   
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "StrongPassword123", "PING"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+  
+
 volumes:
   kafka-data:
+  redis-data:                                                                                                                                                                  
